@@ -184,13 +184,10 @@ def get_data(handle, mode, app, system_info):
     return status, data
 
 
-def acquire(segment_size, handle=None, inifile=None):
+def acquire(segment_size, handle=None, inifile="Acquire.ini"):
     try:
         # initialization common amongst all sample programs:
         # ---------------------------------------------------------------------
-        if inifile is None:
-            inifile = "include/Acquire.ini"
-
         # if handle is None, then get the handle for the first card available
         if handle is None:
             handle = initialize()
