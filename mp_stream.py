@@ -516,35 +516,54 @@ def stream(
 
 
 def DoAnalysis(g_cardTotalData, workbuffer, mp_values, mp_arrays, args):
+    """
+    Do analysis on stream work buffer
+
+    Args:
+        g_cardTotalData (list):
+            list of total data, they make it a list for each card, so you'll
+            only have element in the list
+        workbuffer (buffer):
+            stream's work buffer. You can call it with np.formbuffer(workbuffer, np.int16)
+        mp_values (list of mp.Value):'
+            You pass this list to the stream function to be actively updated by
+            this DoAnalysis function
+        mp_arrays (list of mp.Array):
+            You pass this list to the stream function to be actively updated by
+            this DoAnalysis function
+        args (tuple):
+            tuple containing additional arguments you pass to the stream
+            function that are needed by this DoAnalysis function
+    """
     pass
 
 
-if __name__ == "__main__":
-    ppifg = 2**16  # average segment size
-    buffersize = int(ppifg * 1000 * 2)
-    mp_totaldata = mp.Value("q")
-    mp_buffer = mp.Array("q", ppifg)
+# if __name__ == "__main__":
+#     ppifg = 2**16  # average segment size
+#     buffersize = int(ppifg * 1000 * 2)
+#     mp_totaldata = mp.Value("q")
+#     mp_buffer = mp.Array("q", ppifg)
 
-    N_threads = 2
+#     N_threads = 2
 
-    # modeled after:
-    # stream(
-    #     inifile_default,
-    #     buffersize,
-    #     N_threads=2,
-    #     mp_values=[mp_totaldata],
-    #     mp_arrays=[mp_buffer],
-    #     args_doanalysis=(ppifg,),
-    # )
+#     # modeled after:
+#     # stream(
+#     #     inifile_default,
+#     #     buffersize,
+#     #     N_threads=2,
+#     #     mp_values=[mp_totaldata],
+#     #     mp_arrays=[mp_buffer],
+#     #     args_doanalysis=(ppifg,),
+#     # )
 
-    args = (
-        inifile_default,
-        buffersize,
-        2,
-        [mp_totaldata],
-        [mp_buffer],
-        (ppifg,),
-    )
+#     args = (
+#         inifile_default,
+#         buffersize,
+#         2,
+#         [mp_totaldata],
+#         [mp_buffer],
+#         (ppifg,),
+#     )
 
-    process = mp.Process(target=stream, args=args)
-    process.start()
+#     process = mp.Process(target=stream, args=args)
+#     process.start()
