@@ -266,9 +266,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             (x1,) = Acquire.acquire(self.segmentsize)
 
+            t = (np.arange(x1.size) - x1.size / 2) / self.samplerate_acquire
+            freq = rfftfreq(x1.size, d=1 / self.samplerate_acquire) * 1e-6
             ft_x1 = abs(rfft(x1))
-            self.rplt_td_1.plot(x1, clear=True, _callSync="off")
-            self.rplt_fd_1.plot(ft_x1, clear=True, _callSync="off")
+            self.rplt_td_1.plot(t, x1, clear=True, _callSync="off")
+            self.rplt_fd_1.plot(freq, ft_x1, clear=True, _callSync="off")
 
 
 if __name__ == "__main__":
