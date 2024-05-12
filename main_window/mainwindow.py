@@ -141,6 +141,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         config["PlotCheckLevel"]["plotchecklevel"] = get_item(27)
 
+        inifile = "../GaGe_Python/Stream2Analysis.ini"
+        with open(inifile, "w") as configfile:
+            config.write(configfile)
+
     def write_config_acquire(self):
         config = self.config_acquire
         get_item = lambda i: self.tw_acquire.item(i, 0).text()
@@ -171,6 +175,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         config["Trigger1"]["range"] = get_item(24)
         config["Trigger1"]["impedance"] = get_item(25)
 
+        inifile = "../GaGe_Python/Acquire.ini"
+        with open(inifile, "w") as configfile:
+            config.write(configfile)
+
+    @property
+    def config_stream(self):
+        config = ConfigParser()
+        config.read("../GaGe_Python/Stream2Analysis.ini")
+        return config
+
+    @property
+    def config_acquire(self):
+        config = ConfigParser()
+        config.read("../GaGe_Python/Acquire.ini")
+        return config
+
     @property
     def mode_stream(self):
         if self.tw_stream.item(1, 0).text().lower() == "single":
@@ -188,18 +208,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return 2
         else:
             raise ValueError("invalid mode")
-
-    @property
-    def config_stream(self):
-        config = ConfigParser()
-        config.read("../GaGe_Python/Stream2Analysis.ini")
-        return config
-
-    @property
-    def config_acquire(self):
-        config = ConfigParser()
-        config.read("../GaGe_Python/Acquire.ini")
-        return config
 
     @property
     def segmentsize(self):
