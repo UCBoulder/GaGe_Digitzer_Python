@@ -159,7 +159,7 @@ def get_data(handle, mode, app, system_info, channel_increment):
     buffer_list = []
     for i in range(1, system_info["ChannelCount"] + 1, channel_increment):
         buffer = PyGage.TransferData(
-            handle, 1, 0, 1, app["StartPosition"], app["TransferLength"]
+            handle, i, 0, 1, app["StartPosition"], app["TransferLength"]
         )
         if isinstance(buffer, int):  # an error occurred
             print("Error transferring channel ", 1)
