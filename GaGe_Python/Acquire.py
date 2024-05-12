@@ -97,7 +97,7 @@ def configure_system(handle, filename, segment_size=None):
     return status
 
 
-def initialize():
+def get_handle():
     status = PyGage.Initialize()
     if status < 0:
         return status
@@ -190,7 +190,7 @@ def acquire(segment_size, handle=None, inifile="../GaGe_Python/Acquire.ini"):
         # ---------------------------------------------------------------------
         # if handle is None, then get the handle for the first card available
         if handle is None:
-            handle = initialize()
+            handle = get_handle()
             if handle < 0:
                 # get error string
                 error_string = PyGage.GetErrorString(handle)

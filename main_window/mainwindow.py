@@ -8,8 +8,12 @@ import sys
 sys.path.append("../GaGe_Python")
 
 # need to be on Windows with GaGe drivers installed
-# import Acquire
-# import mp_stream
+import Acquire
+import mp_stream
+
+
+buffer_size_to_sample_size = lambda x: x / 2
+sample_size_to_buffer_size = lambda x: x * 2
 
 
 def _add_RemoteGraphicsView_to_layout(layoutWidget):
@@ -192,6 +196,34 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         config = ConfigParser()
         config.read("../GaGe_Python/Acquire.ini")
         return config
+
+    @property
+    def segmentsize(self):
+        try:
+            segmentsize = int(self.le_segmentsize.text())
+            return segmentsize
+        except Exception as e:
+            print("Error:", e)
+
+            default_segmentsize = 2**14
+            self.le_segmentsize.setText(str(default_segmentsize))
+            return default_segmentsize
+
+    @property
+    def buffersize(self):
+        try:
+            samplesize = int(self.le_buffersize.text())
+            return sample_size_to_buffer_size(samplesize)
+        except Exception as e:
+            print("Error:", e)
+
+            default_samplesize = 2**14
+            self.le_buffersize.setText(str(default_samplesize))
+            return sample_size_to_buffer_size(default_samplesize)
+
+    def acquire(self):
+        x = Acquire.acquire(self.segmentsize)
+        self.rplt_td_1.plot(x, clear=True, _callSync="off")
 
 
 if __name__ == "__main__":
