@@ -1,12 +1,15 @@
 # This Python file uses the following encoding: utf-8
-import sys
-
-sys.path.append("../GaGe_Python")
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PY.form import Ui_MainWindow
 import pyqtgraph as pg
 from configparser import ConfigParser
+import sys
+
+sys.path.append("../GaGe_Python")
+
+# need to be on Windows with GaGe drivers installed
 # import Acquire
+# import mp_stream
 
 
 def _add_RemoteGraphicsView_to_layout(layoutWidget):
@@ -100,7 +103,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def write_config_stream(self):
         config = self.config_stream
-        get_item = lambda i: self.tw_stream.item(i).text()
+        get_item = lambda i: self.tw_stream.item(i, 0).text()
 
         config["Acquisition"]["mode"] = get_item(1)
         config["Acquisition"]["samplerate"] = get_item(2)
@@ -132,7 +135,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def write_config_acquire(self):
         config = self.config_acquire
-        get_item = lambda i: self.tw_acquire.item(i).text()
+        get_item = lambda i: self.tw_acquire.item(i, 0).text()
 
         config["Acquisition"]["mode"] = get_item(1)
         config["Acquisition"]["samplerate"] = get_item(2)
@@ -159,6 +162,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         config["Trigger1"]["source"] = get_item(23)
         config["Trigger1"]["range"] = get_item(24)
         config["Trigger1"]["impedance"] = get_item(25)
+
+    @property
+    def mode_stream(self):
+        if self.tw_stream.item(1, 0).text().lower() == "single":
+            return 1
+        if self.tw_stream.item(1, 0).text().lower() == "dual":
+            return 2
+        else:
+            raise ValueError("invalid mode")
+
+    @property
+    def mode_acquire(self):
+        if self.tw_acquire.item(1, 0).text().lower() == "single":
+            return 1
+        if self.tw_acquire.item(1, 0).text().lower() == "dual":
+            return 2
+        else:
+            raise ValueError("invalid mode")
 
     @property
     def config_stream(self):

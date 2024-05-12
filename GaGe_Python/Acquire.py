@@ -184,7 +184,7 @@ def get_data(handle, mode, app, system_info):
     return status, data
 
 
-def acquire(segment_size, handle=None, inifile="Acquire.ini"):
+def acquire(segment_size, handle=None, inifile="../GaGe_Python/Acquire.ini"):
     try:
         # initialization common amongst all sample programs:
         # ---------------------------------------------------------------------
