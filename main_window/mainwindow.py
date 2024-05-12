@@ -4,6 +4,7 @@ from PY.form import Ui_MainWindow
 import pyqtgraph as pg
 from configparser import ConfigParser
 from numpy.fft import fftshift, ifftshift, rfft, irfft, rfftfreq
+import numpy as np
 import sys
 
 sys.path.append("../GaGe_Python")
@@ -233,20 +234,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.le_buffersize.setText(str(default_samplesize))
             return sample_size_to_buffer_size(default_samplesize)
 
+    @property
+    def samplerate_acquire(self):
+        try:
+            return int(self.tw_acquire.item(2, 0).text())
+        except Exception as e:
+            print("Error:", e)
+
+    @property
+    def samplerate_stream(self):
+        try:
+            return int(self.tw_stream.item(2, 0).text())
+        except Exception as e:
+            print("Error:", e)
+
     def acquire(self):
         # write the latest config
         self.write_config_acquire()
 
         if self.mode_acquire == 2:
             x1, x2 = Acquire.acquire(self.segmentsize)
+
+            t = (np.arange(x1.size) - x1.size / 2) / self.samplerate_acquire
+            freq = rfftfreq(x1.size, d=1 / self.samplerate_acquire) * 1e-6
             ft_x1 = abs(rfft(x1))
             ft_x2 = abs(rfft(x2))
-            self.rplt_td_1.plot(x1, clear=True, _callSync="off")
-            self.rplt_fd_1.plot(ft_x1, clear=True, _callSync="off")
+            self.rplt_td_1.plot(t, x1, clear=True, _callSync="off")
+            self.rplt_fd_1.plot(freq, ft_x1, clear=True, _callSync="off")
             self.rplt_td_2.plot(x2, clear=True, _callSync="off")
             self.rplt_fd_2.plot(ft_x2, clear=True, _callSync="off")
         else:
             (x1,) = Acquire.acquire(self.segmentsize)
+
             ft_x1 = abs(rfft(x1))
             self.rplt_td_1.plot(x1, clear=True, _callSync="off")
             self.rplt_fd_1.plot(ft_x1, clear=True, _callSync="off")
