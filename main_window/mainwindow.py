@@ -255,7 +255,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.mode_acquire == 2:
             x1, x2 = Acquire.acquire(self.segmentsize)
 
-            t = (np.arange(x1.size) - x1.size / 2) / self.samplerate_acquire
+            # plotting
+            t = np.arange(x1.size) / self.samplerate_acquire
             freq = rfftfreq(x1.size, d=1 / self.samplerate_acquire) * 1e-6
             ft_x1 = abs(rfft(x1))
             ft_x2 = abs(rfft(x2))
@@ -266,7 +267,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             (x1,) = Acquire.acquire(self.segmentsize)
 
-            t = (np.arange(x1.size) - x1.size / 2) / self.samplerate_acquire
+            # plotting
+            t = np.arange(x1.size) / self.samplerate_acquire
             freq = rfftfreq(x1.size, d=1 / self.samplerate_acquire) * 1e-6
             ft_x1 = abs(rfft(x1))
             self.rplt_td_1.plot(t, x1, clear=True, _callSync="off")
