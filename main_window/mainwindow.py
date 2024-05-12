@@ -261,8 +261,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             ft_x2 = abs(rfft(x2))
             self.rplt_td_1.plot(t, x1, clear=True, _callSync="off")
             self.rplt_fd_1.plot(freq, ft_x1, clear=True, _callSync="off")
-            self.rplt_td_2.plot(x2, clear=True, _callSync="off")
-            self.rplt_fd_2.plot(ft_x2, clear=True, _callSync="off")
+            self.rplt_td_2.plot(t, x2, clear=True, _callSync="off")
+            self.rplt_fd_2.plot(freq, ft_x2, clear=True, _callSync="off")
         else:
             (x1,) = Acquire.acquire(self.segmentsize)
 
