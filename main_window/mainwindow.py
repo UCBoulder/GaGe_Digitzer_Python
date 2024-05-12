@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 from PY.form import Ui_MainWindow
 import pyqtgraph as pg
 from configparser import ConfigParser
-import Acquire
+# import Acquire
 
 
 def _add_RemoteGraphicsView_to_layout(layoutWidget):
@@ -163,13 +163,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @property
     def config_stream(self):
         config = ConfigParser()
-        config.read("../../Stream2Analysis.ini")
+        config.read("../GaGe_Python/Stream2Analysis.ini")
         return config
 
     @property
     def config_acquire(self):
         config = ConfigParser()
-        config.read("../../Acquire.ini")
+        config.read("../GaGe_Python/Acquire.ini")
         return config
 
 
