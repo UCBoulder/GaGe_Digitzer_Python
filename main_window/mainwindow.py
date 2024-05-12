@@ -223,6 +223,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return sample_size_to_buffer_size(default_samplesize)
 
     def acquire(self):
+        self.write_config_acquire()
+
         x = Acquire.acquire(self.segmentsize)
         ft = abs(rfft(x))
         self.rplt_td_1.plot(x, clear=True, _callSync="off")
