@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 from PY.form import Ui_MainWindow
 import pyqtgraph as pg
 from configparser import ConfigParser
+from numpy.fft import fftshift, ifftshift, rfft, irfft, rfftfreq
 import sys
 
 sys.path.append("../GaGe_Python")
@@ -223,7 +224,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def acquire(self):
         x = Acquire.acquire(self.segmentsize)
+        ft = abs(rfft(x))
         self.rplt_td_1.plot(x, clear=True, _callSync="off")
+        self.rplt_fd_1.plot(ft, clear=True, _callSync="off")
 
 
 if __name__ == "__main__":
