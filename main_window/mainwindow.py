@@ -248,31 +248,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         except Exception as e:
             print("Error:", e)
 
-    def acquire(self):
+    def acquire(self, plot=True):
         # write the latest config
         self.write_config_acquire()
 
         if self.mode_acquire == 2:
             x1, x2 = Acquire.acquire(self.segmentsize)
 
-            # plotting
-            t = np.arange(x1.size) / self.samplerate_acquire
-            freq = rfftfreq(x1.size, d=1 / self.samplerate_acquire) * 1e-6
-            ft_x1 = abs(rfft(x1))
-            ft_x2 = abs(rfft(x2))
-            self.rplt_td_1.plot(t, x1, clear=True, _callSync="off")
-            self.rplt_fd_1.plot(freq, ft_x1, clear=True, _callSync="off")
-            self.rplt_td_2.plot(t, x2, clear=True, _callSync="off")
-            self.rplt_fd_2.plot(freq, ft_x2, clear=True, _callSync="off")
+            if plot:
+                # plotting
+                t = np.arange(x1.size) / self.samplerate_acquire
+                freq = rfftfreq(x1.size, d=1 / self.samplerate_acquire) * 1e-6
+                ft_x1 = abs(rfft(x1))
+                ft_x2 = abs(rfft(x2))
+                self.rplt_td_1.plot(t, x1, clear=True, _callSync="off")
+                self.rplt_fd_1.plot(freq, ft_x1, clear=True, _callSync="off")
+                self.rplt_td_2.plot(t, x2, clear=True, _callSync="off")
+                self.rplt_fd_2.plot(freq, ft_x2, clear=True, _callSync="off")
         else:
             (x1,) = Acquire.acquire(self.segmentsize)
 
-            # plotting
-            t = np.arange(x1.size) / self.samplerate_acquire
-            freq = rfftfreq(x1.size, d=1 / self.samplerate_acquire) * 1e-6
-            ft_x1 = abs(rfft(x1))
-            self.rplt_td_1.plot(t, x1, clear=True, _callSync="off")
-            self.rplt_fd_1.plot(freq, ft_x1, clear=True, _callSync="off")
+            if plot:
+                # plotting
+                t = np.arange(x1.size) / self.samplerate_acquire
+                freq = rfftfreq(x1.size, d=1 / self.samplerate_acquire) * 1e-6
+                ft_x1 = abs(rfft(x1))
+                self.rplt_td_1.plot(t, x1, clear=True, _callSync="off")
+                self.rplt_fd_1.plot(freq, ft_x1, clear=True, _callSync="off")
 
 
 if __name__ == "__main__":
