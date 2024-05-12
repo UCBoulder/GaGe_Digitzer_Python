@@ -223,6 +223,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return sample_size_to_buffer_size(default_samplesize)
 
     def acquire(self):
+        # write the latest config
         self.write_config_acquire()
 
         x = Acquire.acquire(self.segmentsize)

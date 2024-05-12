@@ -1,232 +1,289 @@
-"""This file should handle all the customized plotting and table widgets"""
-
-import pyqtgraph as pg
-import PyQt5.QtWidgets as qt
-import PyQt5.QtGui as qtg
-from matplotlib import cm
-import numpy as np
-from scipy.misc import face
-
-
-class PlotWidget(pg.PlotWidget):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.setBackground('w')
-        self.getAxis('left').setPen('k')
-        self.getAxis('bottom').setPen('k')
-        self.getAxis('left').setTextPen('k')
-        self.getAxis('bottom').setTextPen('k')
-
-        self.xmin, self.xmax = 0., 1.
-        self.ymin, self.ymax = 0., 1.
-
-    def set_xlabel(self, label):
-        self.getAxis('bottom').setLabel(label)
-
-    def set_ylabel(self, label):
-        self.getAxis('left').setLabel(label)
-
-    def set_xmin(self, xmin):
-        self.setXRange(xmin, self.xmax)
-        self.xmin = xmin
-
-    def set_xmax(self, xmax):
-        self.setXRange(self.xmin, xmax)
-        self.xmax = xmax
-
-    def set_ymin(self, ymin):
-        self.setYRange(ymin, self.ymax)
-        self.ymin = ymin
-
-    def set_ymax(self, ymax):
-        self.setYRange(self.ymin, ymax)
-        self.ymax = ymax
+from __future__ import print_function
+from builtins import int
+import platform
+import sys
+from datetime import datetime
+import GageSupport as gs
+import GageConstants as gc
 
 
-def create_curve(color='b', width=2, x=None, y=None):
-    curve = pg.PlotDataItem(pen=pg.mkPen(color=color, width=width))
-    if (x is not None) and (y is not None):
-        curve.setData(x, y)
-    return curve
+# Code used to determine if python is version 2.x or 3.x
+# and if os is 32 bits or 64 bits.  If you know they
+# python version and os you can skip all this and just
+# import the appropriate version
+
+# returns is_64bits for python
+# (i.e. 32 bit python running on 64 bit windows should return false)
+
+is_64_bits = sys.maxsize > 2**32
+
+if is_64_bits:
+    if sys.version_info >= (3, 0):
+        import PyGage3_64 as PyGage
+    else:
+        import PyGage2_64 as PyGage
+else:
+    if sys.version_info > (3, 0):
+        import PyGage3_32 as PyGage
+    else:
+        import PyGage2_32 as PyGage
 
 
-class PlotWindow:
-    def __init__(self, le_x_ll, le_x_ul, le_y_ll, le_y_ul, plotwidget):
-        le_x_ll: qt.QLineEdit
-        le_x_ul: qt.QLineEdit
-        le_y_ll: qt.QLineEdit
-        le_y_ul: qt.QLineEdit
-        plotwidget: PlotWidget
+def configure_system(handle, filename):
+    acq, sts = gs.LoadAcquisitionConfiguration(handle, filename)
 
-        self.plotwidget = plotwidget
-        self.le_wl_ll = le_x_ll
-        self.le_wl_ul = le_x_ul
-        self.le_ll = le_y_ll
-        self.le_ul = le_y_ul
+    if isinstance(acq, dict) and acq:
+        status = PyGage.SetAcquisitionConfig(handle, acq)
+        if status < 0:
+            return status
+    else:
+        print("Using defaults for acquisition parameters")
 
-        self.le_wl_ll.setValidator(qtg.QDoubleValidator())
-        self.le_wl_ul.setValidator(qtg.QDoubleValidator())
-        self.le_ll.setValidator(qtg.QDoubleValidator())
-        self.le_ul.setValidator(qtg.QDoubleValidator())
+    if sts == gs.INI_FILE_MISSING:
+        print("Missing ini file, using defaults")
+    elif sts == gs.PARAMETERS_MISSING:
+        print(
+            "One or more acquisition parameters missing, using defaults for missing values"
+        )
 
-        self.connect()
+    system_info = PyGage.GetSystemInfo(handle)
+    acq = PyGage.GetAcquisitionConfig(
+        handle
+    )  # check for error - copy to GageAcquire.py
 
-    @property
-    def ymax(self):
-        return self.plotwidget.ymax
+    channel_increment = gs.CalculateChannelIndexIncrement(
+        acq["Mode"], system_info["ChannelCount"], system_info["BoardCount"]
+    )
 
-    @ymax.setter
-    def ymax(self, ymax):
-        self.plotwidget.set_ymax(ymax)
-
-    @property
-    def ymin(self):
-        return self.plotwidget.ymin
-
-    @ymin.setter
-    def ymin(self, ymin):
-        self.plotwidget.set_ymin(ymin)
-
-    @property
-    def xmax(self):
-        return self.plotwidget.xmax
-
-    @xmax.setter
-    def xmax(self, xmax):
-        self.plotwidget.set_xmax(xmax)
-
-    @property
-    def xmin(self):
-        return self.plotwidget.xmin
-
-    @xmin.setter
-    def xmin(self, xmin):
-        self.plotwidget.set_xmin(xmin)
-
-    def update_xmax(self):
-        xmax = float(self.le_wl_ul.text())
-        self.xmax = xmax
-
-    def update_xmin(self):
-        xmin = float(self.le_wl_ll.text())
-        self.xmin = xmin
-
-    def update_ymax(self):
-        ymax = float(self.le_ul.text())
-        self.ymax = ymax
-
-    def update_ymin(self):
-        ymin = float(self.le_ll.text())
-        self.ymin = ymin
-
-    def connect(self):
-        self.le_ul.editingFinished.connect(self.update_ymax)
-        self.le_ll.editingFinished.connect(self.update_ymin)
-        self.le_wl_ul.editingFinished.connect(self.update_xmax)
-        self.le_wl_ll.editingFinished.connect(self.update_xmin)
-
-    def update_line_edits_to_properties(self):
-        self.le_ll.setText('%.3f' % self.ymin)
-        self.le_ul.setText('%.3f' % self.ymax)
-        self.le_wl_ll.setText('%.3f' % self.xmin)
-        self.le_wl_ul.setText('%.3f' % self.xmax)
-
-    def format_to_current_viewBox(self):
-        rect = self.plotwidget.viewRect()
-        self.xmin, self.xmax = rect.left(), rect.right()
-        self.ymin, self.ymax = rect.bottom(), rect.top()
-        self.update_line_edits_to_properties()
-
-    def format_to_curve(self, curve):
-        curve: pg.PlotDataItem
-        self.xmin, self.xmax = curve.xData[[0, -1]]
-        self.ymin, self.ymax = curve.yData[[0, -1]]
-        self.update_line_edits_to_properties()
-
-    def format_to_xy_data(self, x, y):
-        self.xmin, self.xmax = x[[0, -1]]
-        self.ymin, self.ymax = y[[0, -1]]
-        self.update_line_edits_to_properties()
-
-
-def get_colormap(string):
-    pos = np.linspace(0, 1, 300)
-    lut = cm.get_cmap(string)(pos) * 255
-    return pos, lut
-
-
-# The following should also be able to be passed in as an argument to the
-# init function of PlotWindow (in place of PlotWidget) However, note the
-# format_to_current_viewBox method will format it to something really big. I
-# don't think I'll use that method but if you do you should change
-# plotwidget.viewRect() to plotwidget.PlotItem.viewRect()
-class ImageWithAxisWidget(pg.GraphicsLayoutWidget):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.show()
-        self.setBackground('w')
-
-        self.PlotItem = pg.PlotItem()
-        self.addItem(self.PlotItem)
-
-        self.PlotItem.getAxis('left').setPen('k')
-        self.PlotItem.getAxis('bottom').setPen('k')
-        self.PlotItem.getAxis('left').setTextPen('k')
-        self.PlotItem.getAxis('bottom').setTextPen('k')
-
-        self.ii = pg.ImageItem()
-        self.PlotItem.addItem(self.ii)
-
-        # self.plot_image()
-
-        self.xmin, self.xmax = 0., 1.
-        self.ymin, self.ymax = 0., 1.
-
-    def set_xlabel(self, label):
-        self.PlotItem.getAxis('bottom').setLabel(label)
-
-    def set_ylabel(self, label):
-        self.PlotItem.getAxis('left').setLabel(label)
-
-    def set_xmin(self, xmin):
-        self.PlotItem.setXRange(xmin, self.xmax)
-        self.xmin = xmin
-
-    def set_xmax(self, xmax):
-        self.PlotItem.setXRange(self.xmin, xmax)
-        self.xmax = xmax
-
-    def set_ymin(self, ymin):
-        self.PlotItem.setYRange(ymin, self.ymax)
-        self.ymin = ymin
-
-    def set_ymax(self, ymax):
-        self.PlotItem.setYRange(self.ymin, ymax)
-        self.ymax = ymax
-
-    def set_cmap(self, cmap='nipy_spectral'):
-        _, lut = get_colormap(cmap)
-        self.ii.setLookupTable(lut)
-
-    def scale_axes(self, x=np.array([0, 1]), y=np.array([0, 1]), format='xy'):
-
-        # reset the transformation or else each time you collect a spectrogram
-        # it shrinks the plot
-        self.ii.resetTransform()
-
-        xlims, ylims = x[[0, -1]], y[[0, -1]]
-        x0, y0 = xlims[0], ylims[0]
-
-        if format == 'ij':
-            yscale, xscale = len(x), len(y)
-            self.ii.translate(y0, x0)
-            self.ii.scale(np.diff(ylims) / yscale, np.diff(xlims) / xscale)
-        elif format == 'xy':
-            xscale, yscale = len(x), len(y)
-            self.ii.translate(x0, y0)
-            self.ii.scale(np.diff(xlims) / xscale, np.diff(ylims) / yscale)
+    missing_parameters = False
+    for i in range(1, system_info["ChannelCount"] + 1, channel_increment):
+        chan, sts = gs.LoadChannelConfiguration(handle, i, filename)
+        if isinstance(chan, dict) and chan:
+            status = PyGage.SetChannelConfig(handle, i, chan)
+            if status < 0:
+                return status
         else:
-            raise ValueError("format should be 'ij' or 'xy'")
+            print("Using default parameters for channel ", i)
 
-    def plot_image(self, data):
-        self.ii.setImage(data)
+        if sts == gs.PARAMETERS_MISSING:
+            missing_parameters = True
+
+    if missing_parameters:
+        print(
+            "One or more channel parameters missing, using defaults for missing values"
+        )
+
+    missing_parameters = False
+    # in this example we're only using 1 trigger source, if we use
+    # system_info['TriggerMachineCount'] we'll get warnings about
+    # using default values for the trigger engines that aren't in
+    # the ini file
+    trigger_count = 1
+    for i in range(1, trigger_count + 1):
+        trig, sts = gs.LoadTriggerConfiguration(handle, i, filename)
+        if isinstance(trig, dict) and trig:
+            status = PyGage.SetTriggerConfig(handle, i, trig)
+            if status < 0:
+                return status
+        else:
+            print("Using default parameters for trigger ", i)
+
+        if sts == gs.PARAMETERS_MISSING:
+            missing_parameters = True
+
+    if missing_parameters:
+        print(
+            "One or more trigger parameters missing, using defaults for missing values"
+        )
+
+    status = PyGage.Commit(handle)
+    return status
+
+
+def initialize():
+    status = PyGage.Initialize()
+    if status < 0:
+        return status
+    else:
+        handle = PyGage.GetSystem(0, 0, 0, 0)
+        return handle
+
+
+def save_data_to_file(handle, mode, app, system_info):
+    status = PyGage.StartCapture(handle)
+    if status < 0:
+        return status
+
+    capture_time = 0
+    status = PyGage.GetStatus(handle)
+    while status != gc.ACQ_STATUS_READY:
+        status = PyGage.GetStatus(handle)
+        # if we've triggered, get the time of day
+        # this is just to demonstrate how to use the time stamp
+        # in the SIG file header
+        if status == gc.ACQ_STATUS_TRIGGERED:
+            capture_time = datetime.now().time()
+
+    # just in case we missed the trigger time, we'll use the capture time
+    if capture_time == 0:
+        capture_time = datetime.now().time()
+
+    channel_increment = gs.CalculateChannelIndexIncrement(
+        mode, system_info["ChannelCount"], system_info["BoardCount"]
+    )
+
+    acq = PyGage.GetAcquisitionConfig(handle)
+    # These fields are common for all the channels
+
+    # Validate the start address and the length. This is especially
+    # necessary if trigger delay is being used.
+
+    min_start_address = acq["TriggerDelay"] + acq["Depth"] - acq["SegmentSize"]
+    if app["StartPosition"] < min_start_address:
+        print(
+            "\nInvalid Start Address was changed from {0} to {1}".format(
+                app["StartPosition"], min_start_address
+            )
+        )
+        app["StartPosition"] = min_start_address
+
+    max_length = acq["TriggerDelay"] + acq["Depth"] - min_start_address
+    if app["TransferLength"] > max_length:
+        print(
+            "\nInvalid Transfer Length was changed from {0} to {1}".format(
+                app["TransferLength"], max_length
+            )
+        )
+        app["TransferLength"] = max_length
+
+    stHeader = {}
+    if acq["ExternalClock"]:
+        stHeader["SampleRate"] = acq["SampleRate"] / acq["ExtClockSampleSkip"] * 1000
+    else:
+        stHeader["SampleRate"] = acq["SampleRate"]
+
+    stHeader["Start"] = app["StartPosition"]
+    stHeader["Length"] = app["TransferLength"]
+    stHeader["SampleSize"] = acq["SampleSize"]
+    stHeader["SampleOffset"] = acq["SampleOffset"]
+    stHeader["SampleRes"] = acq["SampleResolution"]
+    stHeader["SegmentNumber"] = 1  # this example only does singe capture
+    stHeader["SampleBits"] = acq["SampleBits"]
+
+    if app["SaveFileFormat"] == gs.TYPE_SIG:
+        stHeader["SegmentCount"] = 1
+    else:
+        stHeader["SegmentCount"] = acq["SegmentCount"]
+
+    for i in range(1, system_info["ChannelCount"] + 1, channel_increment):
+        buffer = PyGage.TransferData(
+            handle, i, 0, 1, app["StartPosition"], app["TransferLength"]
+        )
+        if isinstance(buffer, int):  # an error occurred
+            print("Error transferring channel ", i)
+            return buffer
+
+        # if call succeeded (buffer is not an integer) then
+        # buffer[0] holds the actual data, buffer[1] holds
+        # the actual start and buffer[2] holds the actual length
+
+        chan = PyGage.GetChannelConfig(handle, i)
+        stHeader["InputRange"] = chan["InputRange"]
+        stHeader["DcOffset"] = chan["DcOffset"]
+
+        if app["SaveFileFormat"] == gs.TYPE_SIG:
+            filename = app["SaveFileName"] + "_CH" + str(i) + ".sig"
+        elif app["SaveFileFormat"] == gs.TYPE_BIN:
+            filename = app["SaveFileName"] + "_CH" + str(i) + ".dat"
+        else:
+            filename = app["SaveFileName"] + "_CH" + str(i) + ".txt"
+
+        # TransferData may change the actual length of the buffer
+        # (i.e. if the requested transfer length was too large), so we can
+        # change it in the header to be the length of the buffer or
+        # we can use the actual length (buffer[2])
+        stHeader["Length"] = buffer[2]
+
+        timeStamp = {}
+        timeStamp["Hour"] = capture_time.hour
+        timeStamp["Minute"] = capture_time.minute
+        timeStamp["Second"] = capture_time.second
+        timeStamp["Point1Second"] = (
+            capture_time.microsecond // 1000
+        )  # convert to milliseconds
+
+        stHeader["TimeStamp"] = timeStamp
+        status = gs.SaveFile(filename, i, buffer[0], app["SaveFileFormat"], stHeader)
+
+    return status
+
+
+def main():
+    inifile = "Acquire.ini"
+    try:
+        handle = initialize()
+        if handle < 0:
+            # get error string
+            error_string = PyGage.GetErrorString(handle)
+            print("Error: ", error_string)
+            raise SystemExit
+
+        system_info = PyGage.GetSystemInfo(handle)
+        if not isinstance(
+            system_info, dict
+        ):  # if it's not a dict, it's an int indicating an error
+            print("Error: ", PyGage.GetErrorString(system_info))
+            PyGage.FreeSystem(handle)
+            raise SystemExit
+
+        print("\nBoard Name: ", system_info["BoardName"])
+
+        status = configure_system(handle, inifile)
+        if status < 0:
+            # get error string
+            error_string = PyGage.GetErrorString(status)
+            print("Error: ", error_string)
+        else:
+            acq_config = PyGage.GetAcquisitionConfig(handle)
+            app, sts = gs.LoadApplicationConfiguration(inifile)
+
+            # we don't need to check for gs.INI_FILE_MISSING because if there's no ini file
+            # we've already reported when calling configure_system
+            if sts == gs.PARAMETERS_MISSING:
+                print(
+                    "One or more application parameters missing, using defaults for missing values"
+                )
+
+            status = save_data_to_file(handle, acq_config["Mode"], app, system_info)
+            if isinstance(status, int):
+                if status < 0:
+                    error_string = PyGage.GetErrorString(status)
+                    print("Error: ", error_string)
+                elif status == 0:  # could not open o write to the data file
+                    print("Error opening or writing ", filename)
+                else:
+                    if app["SaveFileFormat"] == gs.TYPE_SIG:
+                        print(
+                            "\nAcquisition completed.\nAll channels saved as "
+                            "GageScope SIG files in the current directory\n"
+                        )
+                    elif app["SaveFileFormat"] == gs.TYPE_BIN:
+                        print(
+                            "\nAcquisition completed.\nAll channels saved "
+                            "as binary files in the current directory\n"
+                        )
+                    else:
+                        print(
+                            "\nAcquisition completed.\nAll channels saved "
+                            "as ASCII data files in the current directory\n"
+                        )
+            else:  # not an int, we can't open or write the file so we returned the filename
+                print("Error opening or writing ", status)
+    except KeyboardInterrupt:
+        print("Exiting program")
+
+    PyGage.FreeSystem(handle)
+
+
+if __name__ == "__main__":
+    main()
