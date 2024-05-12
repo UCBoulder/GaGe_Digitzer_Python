@@ -10,8 +10,8 @@ import sys
 sys.path.append("../GaGe_Python")
 
 # need to be on Windows with GaGe drivers installed
-import Acquire
-import mp_stream
+# import Acquire
+# import mp_stream
 
 
 buffer_size_to_sample_size = lambda x: x / 2
@@ -265,6 +265,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.rplt_fd_1.plot(freq, ft_x1, clear=True, _callSync="off")
                 self.rplt_td_2.plot(t, x2, clear=True, _callSync="off")
                 self.rplt_fd_2.plot(freq, ft_x2, clear=True, _callSync="off")
+
+            return x1, x2
+
         else:
             (x1,) = Acquire.acquire(self.segmentsize)
 
@@ -275,6 +278,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 ft_x1 = abs(rfft(x1))
                 self.rplt_td_1.plot(t, x1, clear=True, _callSync="off")
                 self.rplt_fd_1.plot(freq, ft_x1, clear=True, _callSync="off")
+
+            return x1
 
 
 if __name__ == "__main__":

@@ -478,6 +478,7 @@ def stream(
             # then start the thread on analyzing new data
             stream_info.WorkBuffer[:] = buffer[:]
             args = (
+                loop_count,
                 g_cardTotalData,
                 stream_info.WorkBuffer,
                 mp_values,
@@ -515,24 +516,26 @@ def stream(
     PyGage.FreeSystem(handle)
 
 
-def DoAnalysis(g_cardTotalData, workbuffer, mp_values, mp_arrays, args):
+def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, args):
     """
     Do analysis on stream work buffer
 
     Args:
+        loop_count (int):
+            current loop count in the stream while loop
         g_cardTotalData (list):
             list of total data, they make it a list for each card, so you'll
-            only have element in the list
+            only have one element in the list
         workbuffer (buffer):
-            stream's work buffer. You can call it with np.formbuffer(workbuffer, np.int16)
+            stream's work buffer. You can retrieve it with np.formbuffer(workbuffer, np.int16)
         mp_values (list of mp.Value):'
-            You pass this list to the stream function to be actively updated by
+            You passed this list to the stream function to be actively updated by
             this DoAnalysis function
         mp_arrays (list of mp.Array):
-            You pass this list to the stream function to be actively updated by
+            You passed this list to the stream function to be actively updated by
             this DoAnalysis function
         args (tuple):
-            tuple containing additional arguments you pass to the stream
+            tuple containing additional arguments you passed to the stream
             function that are needed by this DoAnalysis function
     """
     pass

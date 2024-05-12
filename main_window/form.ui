@@ -197,14 +197,14 @@
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <spacer name="horizontalSpacer_3">
+         <spacer name="horizontalSpacer_4">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>198</width>
-            <height>20</height>
+            <width>96</width>
+            <height>17</height>
            </size>
           </property>
          </spacer>
@@ -593,6 +593,19 @@
          </layout>
         </item>
         <item>
+         <spacer name="horizontalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>198</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
            <widget class="QLabel" name="label_8">
@@ -801,6 +814,9 @@
              <property name="text">
               <string>hello world</string>
              </property>
+             <property name="flags">
+              <set>NoItemFlags</set>
+             </property>
             </item>
             <item row="6" column="0">
              <property name="text">
@@ -958,8 +974,8 @@
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>198</width>
-            <height>20</height>
+            <width>126</width>
+            <height>17</height>
            </size>
           </property>
          </spacer>
@@ -976,7 +992,7 @@
      <x>0</x>
      <y>0</y>
      <width>965</width>
-     <height>24</height>
+     <height>37</height>
     </rect>
    </property>
   </widget>
