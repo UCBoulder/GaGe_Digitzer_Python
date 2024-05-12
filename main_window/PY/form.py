@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/Users/peterchang/Github/GaGe_Digitzer_Python/UI/Main_Window/form.ui'
+# Form implementation generated from reading ui file '/Users/peterchang/Github/GaGe_Digitzer_Python/main_window/form.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.10
 #
@@ -62,13 +62,13 @@ class Ui_MainWindow(object):
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.label = QtWidgets.QLabel(self.tab)
         font = QtGui.QFont()
-        font.setPointSize(14)
+        font.setPointSize(13)
         self.label.setFont(font)
         self.label.setObjectName("label")
         self.gridLayout_2.addWidget(self.label, 0, 0, 1, 1)
         self.label_5 = QtWidgets.QLabel(self.tab)
         font = QtGui.QFont()
-        font.setPointSize(14)
+        font.setPointSize(13)
         self.label_5.setFont(font)
         self.label_5.setObjectName("label_5")
         self.gridLayout_2.addWidget(self.label_5, 0, 1, 1, 1)
@@ -80,13 +80,13 @@ class Ui_MainWindow(object):
         self.gridLayout_2.addWidget(self.gv_fd_1, 1, 1, 1, 1)
         self.label_4 = QtWidgets.QLabel(self.tab)
         font = QtGui.QFont()
-        font.setPointSize(14)
+        font.setPointSize(13)
         self.label_4.setFont(font)
         self.label_4.setObjectName("label_4")
         self.gridLayout_2.addWidget(self.label_4, 2, 0, 1, 1)
         self.label_6 = QtWidgets.QLabel(self.tab)
         font = QtGui.QFont()
-        font.setPointSize(14)
+        font.setPointSize(13)
         self.label_6.setFont(font)
         self.label_6.setObjectName("label_6")
         self.gridLayout_2.addWidget(self.label_6, 2, 1, 1, 1)
@@ -110,7 +110,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.label_7 = QtWidgets.QLabel(self.tab_2)
         font = QtGui.QFont()
-        font.setPointSize(14)
+        font.setPointSize(13)
         self.label_7.setFont(font)
         self.label_7.setObjectName("label_7")
         self.verticalLayout.addWidget(self.label_7)
@@ -271,7 +271,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.label_8 = QtWidgets.QLabel(self.tab_2)
         font = QtGui.QFont()
-        font.setPointSize(14)
+        font.setPointSize(13)
         self.label_8.setFont(font)
         self.label_8.setObjectName("label_8")
         self.verticalLayout_2.addWidget(self.label_8)
