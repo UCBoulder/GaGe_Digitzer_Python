@@ -44,6 +44,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.read_config_stream()
         self.read_config_acquire()
 
+        # connections
+        self.pb_gage_acquire.clicked.connect(self.acquire)
+
     def read_config_stream(self):
         config = self.config_stream
         setText = lambda i, s: self.tw_stream.item(i, 0).setText(s)
@@ -226,10 +229,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # write the latest config
         self.write_config_acquire()
 
-        x = Acquire.acquire(self.segmentsize)
-        ft = abs(rfft(x))
-        self.rplt_td_1.plot(x, clear=True, _callSync="off")
-        self.rplt_fd_1.plot(ft, clear=True, _callSync="off")
+        if self.mode_acquire == 2:
+            x1, x2 = Acquire.acquire(self.segmentsize)
+            ft_x1 = abs(rfft(x1))
+            ft_x2 = abs(rfft(x2))
+            self.rplt_td_1.plot(x1, clear=True, _callSync="off")
+            self.rplt_fd_1.plot(ft_x1, clear=True, _callSync="off")
+            self.rplt_td_2.plot(x2, clear=True, _callSync="off")
+            self.rplt_fd_2.plot(ft_x2, clear=True, _callSync="off")
+        else:
+            x1 = Acquire.acquire(self.segmentsize)
+            ft_x1 = abs(rfft(x1))
+            self.rplt_td_1.plot(x1, clear=True, _callSync="off")
+            self.rplt_fd_1.plot(ft_x1, clear=True, _callSync="off")
 
 
 if __name__ == "__main__":
