@@ -94,7 +94,7 @@ def configure_system(handle, filename, segment_size=None):
         )
 
     status = PyGage.Commit(handle)
-    return status
+    return status, channel_increment
 
 
 def get_handle():
@@ -106,7 +106,7 @@ def get_handle():
         return handle
 
 
-def get_data(handle, mode, app, system_info):
+def get_data(handle, mode, app, system_info, channel_increment):
     status = PyGage.StartCapture(handle)
     if status < 0:
         return status
@@ -156,14 +156,15 @@ def get_data(handle, mode, app, system_info):
     else:
         stHeader["SegmentCount"] = acq["SegmentCount"]
 
-    # we are only streaming data from 1 channel:
-    # so i = 1
-    buffer = PyGage.TransferData(
-        handle, 1, 0, 1, app["StartPosition"], app["TransferLength"]
-    )
-    if isinstance(buffer, int):  # an error occurred
-        print("Error transferring channel ", 1)
-        return buffer
+    buffer_list = []
+    for i in range(1, system_info["ChannelCount"] + 1, channel_increment):
+        buffer = PyGage.TransferData(
+            handle, 1, 0, 1, app["StartPosition"], app["TransferLength"]
+        )
+        if isinstance(buffer, int):  # an error occurred
+            print("Error transferring channel ", 1)
+            return buffer
+        buffer_list.append(buffer)
 
     # if call succeeded (buffer is not an integer) then
     # buffer[0] holds the actual data, buffer[1] holds
@@ -179,9 +180,12 @@ def get_data(handle, mode, app, system_info):
     # buffer[0] is a numpy array I don't know why in their code they converted
     # the array to list and then used map, it's a heck of a lot longer to do
     # it that way.
-    data = convert_adc_to_volts(buffer[0], stHeader, scale_factor, offset)
+    data_list = []
+    for buffer in buffer_list:
+        data = convert_adc_to_volts(buffer[0], stHeader, scale_factor, offset)
+        data_list.append(data)
 
-    return status, data
+    return status, data_list
 
 
 def acquire(segment_size, handle=None, inifile="../GaGe_Python/Acquire.ini"):
@@ -212,7 +216,7 @@ def acquire(segment_size, handle=None, inifile="../GaGe_Python/Acquire.ini"):
 
         print("\nBoard Name: ", system_info["BoardName"])
 
-        status = configure_system(handle, inifile, segment_size)
+        status, channel_increment = configure_system(handle, inifile, segment_size)
         if status < 0:
             # get error string
             error_string = PyGage.GetErrorString(status)
@@ -234,7 +238,9 @@ def acquire(segment_size, handle=None, inifile="../GaGe_Python/Acquire.ini"):
             # -----------------------------------------------------------------
             # initialization done
 
-            status, data = get_data(handle, acq_config["Mode"], app, system_info)
+            status, data_list = get_data(
+                handle, acq_config["Mode"], app, system_info, channel_increment
+            )
             if isinstance(status, int):
                 if status < 0:
                     error_string = PyGage.GetErrorString(status)
@@ -244,7 +250,7 @@ def acquire(segment_size, handle=None, inifile="../GaGe_Python/Acquire.ini"):
 
             # free the handle and return the data data
             PyGage.FreeSystem(handle)
-            return data
+            return data_list
     except KeyboardInterrupt:
         print("Exiting program")
 
