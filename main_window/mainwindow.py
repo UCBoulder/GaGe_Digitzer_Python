@@ -248,7 +248,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         except Exception as e:
             print("Error:", e)
 
-    def acquire(self, plot=True):
+    def acquire(self, *args, plot=True):
         # write the latest config
         self.write_config_acquire()
 
