@@ -79,7 +79,7 @@ class Ui_MainWindow(object):
         self.label_10.setObjectName("label_10")
         self.gridLayout.addWidget(self.label_10, 10, 0, 1, 1)
         self.pb = QtWidgets.QProgressBar(self.groupBox)
-        self.pb.setProperty("value", 24)
+        self.pb.setProperty("value", 0)
         self.pb.setObjectName("pb")
         self.gridLayout.addWidget(self.pb, 10, 2, 1, 3)
         self.gridLayout_3.addWidget(self.groupBox, 0, 0, 1, 1)
