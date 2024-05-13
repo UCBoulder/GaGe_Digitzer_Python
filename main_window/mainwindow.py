@@ -242,7 +242,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             segmentsize = int(self.le_segmentsize.text())
             return segmentsize
         except Exception as e:
-            print("Error:", e)
+            self.tb_monitor.setText("Error:", e)
 
             default_segmentsize = 2**14
             self.le_segmentsize.setText(str(default_segmentsize))
@@ -254,7 +254,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             samplesize = int(self.le_buffersize.text())
             return sample_size_to_buffer_size(samplesize)
         except Exception as e:
-            print("Error:", e)
+            self.tb_monitor.setText("Error:", e)
 
             default_samplesize = 2**14
             self.le_buffersize.setText(str(default_samplesize))
@@ -265,8 +265,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         try:
             samplesize = int(self.le_savebuffersize.text())
             return samplesize
+
         except Exception as e:
-            print("Error:", e)
+            self.tb_monitor.setText("Error:", e)
 
             default_samplesize = 2**14 * 100  # save 100
             self.le_buffersize.setText(str(default_samplesize))
@@ -277,14 +278,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         try:
             return int(self.tw_acquire.item(2, 0).text())
         except Exception as e:
-            print("Error:", e)
+            self.tb_monitor.setText("Error:", e)
 
     @property
     def samplerate_stream(self):
         try:
             return int(self.tw_stream.item(2, 0).text())
         except Exception as e:
-            print("Error:", e)
+            self.tb_monitor.setText("Error:", e)
 
     def acquire(self, *args, plot=True):
         # write the latest config
@@ -328,7 +329,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         try:
             level_percent = float(self.tw_stream.item(27, 0).text())
         except Exception as e:
-            print("Error:", e)
+            self.tb_monitor.setText("Error:", e)
             return
 
         if self.mode_acquire == 1:
