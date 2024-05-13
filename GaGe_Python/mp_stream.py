@@ -626,7 +626,7 @@ if __name__ == "__main__":
 
     if mode == "save average":
         savebuffersize = segmentsize * 500
-        args_doanalysis = (mode, savebuffersize, stream_stop_event)
+        args_doanalysis = (mode, segmentsize, savebuffersize, stream_stop_event)
         mp_arrays = [mp.Array("q", savebuffersize)]
 
     args = (
