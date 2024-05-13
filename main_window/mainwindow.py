@@ -10,8 +10,8 @@ import sys
 sys.path.append("../GaGe_Python")
 
 # need to be on Windows with GaGe drivers installed
-# import Acquire
-# import mp_stream
+import Acquire
+import mp_stream
 
 
 buffer_size_to_sample_size = lambda x: x / 2

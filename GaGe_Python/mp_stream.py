@@ -302,6 +302,7 @@ def stream(
     inifile,
     buffersize,
     N_threads=2,
+    stop_on_fifo_full=True,
     mp_values=[],
     mp_arrays=[],
     args_doanalysis=None,
@@ -458,7 +459,8 @@ def stream(
 
             if STM_TRANSFER_ERROR_FIFOFULL & p[0]:
                 print("Fifo full detected on card ", card_index)
-                done = True
+                if stop_on_fifo_full:
+                    done = True
 
         else:  # error detected
             done = True
@@ -549,11 +551,14 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, ar
 
 #     N_threads = 2
 
+#     stop_on_fifo_full = True
+
 #     # modeled after:
 #     # stream(
 #     #     inifile_default,
 #     #     buffersize,
 #     #     N_threads=2,
+#     #     stop_on_fifo_full=stop_on_fifo_full,
 #     #     mp_values=[mp_totaldata],
 #     #     mp_arrays=[mp_buffer],
 #     #     args_doanalysis=(ppifg,),
@@ -563,6 +568,7 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, ar
 #         inifile_default,
 #         buffersize,
 #         2,
+#         stop_on_fifo_full,
 #         [mp_totaldata],
 #         [mp_buffer],
 #         (ppifg,),
