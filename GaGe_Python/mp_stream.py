@@ -609,7 +609,6 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *a
 
 
 if __name__ == "__main__":
-    N_avg = 100
     segmentsize = 77760
 
     stream_ready_event = mp.Event()
@@ -619,26 +618,31 @@ if __name__ == "__main__":
 
     N_analysis_threads = 2
 
-    mode = "save average"
+    mode = "save"
+    N_avg = 500
+    N_save = 500
     mp_values = [mp.Value("q")]
 
     if mode == "average":
+        buffersize = segmentsize * N_avg * 2
         args_doanalysis = (mode, segmentsize)
         mp_arrays = [mp.Array("q", segmentsize)]
 
     if mode == "save average":
-        savebuffersize = segmentsize * 500
+        buffersize = segmentsize * N_avg * 2
+        savebuffersize = segmentsize * N_save
         args_doanalysis = (mode, segmentsize, savebuffersize, stream_stop_event)
         mp_arrays = [mp.Array("q", savebuffersize)]
 
     if mode == "save":
-        savebuffersize = segmentsize * 500
+        buffersize = segmentsize * 2
+        savebuffersize = segmentsize * N_save
         args_doanalysis = (mode, savebuffersize, stream_stop_event)
         mp_arrays = [mp.Array("q", savebuffersize)]
 
     args = (
         inifile_default,
-        segmentsize * N_avg * 2,
+        buffersize,
         stream_ready_event,
         stream_start_event,
         stream_stop_event,
