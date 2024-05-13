@@ -309,6 +309,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print("Error:", e)
             return
 
+        if self.mode_acquire == 1:
+            if self.x1 is None:
+                self.tb_monitor.setText("ch1 not acquired")
+                return
+
+            ppifg1_mean, ppifg1 = find_npts(self.x1, level_percent)
+            self.ppifg1 = ppifg1
+
         if self.mode_acquire == 2:
             ch1_missing = False
             ch2_missing = False
@@ -329,8 +337,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             ppifg1_mean, ppifg1 = find_npts(self.x1, level_percent)
             ppifg2_mean, ppifg2 = find_npts(self.x2, level_percent)
 
-            self.tb_monitor.settExt(
-                f"ch1 ppifg: {np.round(ppifg1_mean, 3)} \n ch2 ppifg: {np.round(ppifg2_mean, 3)}"
+            self.tb_monitor.setText(
+                f"ch1 ppifg: {np.round(ppifg1_mean, 5)} \n ch2 ppifg: {np.round(ppifg2_mean, 3)}"
             )
 
             self.ppifg1 = ppifg1
