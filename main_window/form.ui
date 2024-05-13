@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>965</width>
-    <height>641</height>
+    <width>996</width>
+    <height>714</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,10 +27,16 @@
        <layout class="QGridLayout" name="gridLayout_3">
         <item row="0" column="0">
          <widget class="QGroupBox" name="groupBox">
+          <property name="minimumSize">
+           <size>
+            <width>287</width>
+            <height>375</height>
+           </size>
+          </property>
           <property name="maximumSize">
            <size>
-            <width>273</width>
-            <height>301</height>
+            <width>287</width>
+            <height>375</height>
            </size>
           </property>
           <property name="title">
@@ -44,35 +50,49 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="1" colspan="2">
+           <item row="0" column="2" colspan="2">
             <widget class="QLineEdit" name="le_segmentsize">
              <property name="text">
               <string>16384</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="0">
+           <item row="1" column="0" colspan="2">
             <widget class="QLabel" name="label_3">
              <property name="text">
-              <string>buffer size</string>
+              <string>stream buffer size</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="1" colspan="2">
+           <item row="1" column="2" colspan="2">
             <widget class="QLineEdit" name="le_buffersize">
              <property name="text">
               <string>16384</string>
              </property>
             </widget>
            </item>
-           <item row="2" column="0" colspan="2">
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_9">
+             <property name="text">
+              <string>save buffer size</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1" colspan="3">
+            <widget class="QLineEdit" name="le_savebuffersize">
+             <property name="text">
+              <string>1638400</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0" colspan="2">
             <widget class="QPushButton" name="pb_gage_acquire">
              <property name="text">
               <string>GaGe Acquire</string>
              </property>
             </widget>
            </item>
-           <item row="2" column="2">
+           <item row="3" column="3">
             <spacer name="horizontalSpacer">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -85,21 +105,35 @@
              </property>
             </spacer>
            </item>
-           <item row="3" column="0" colspan="2">
+           <item row="4" column="0" colspan="2">
             <widget class="QPushButton" name="pb_calc_ppifg">
              <property name="text">
               <string>calculate ppifg</string>
              </property>
             </widget>
            </item>
-           <item row="4" column="0" colspan="2">
+           <item row="5" column="0" colspan="2">
             <widget class="QPushButton" name="pb_gage_stream">
              <property name="text">
               <string>GaGe Stream</string>
              </property>
             </widget>
            </item>
-           <item row="5" column="0" colspan="3">
+           <item row="6" column="0" colspan="4">
+            <widget class="QCheckBox" name="cb_average">
+             <property name="text">
+              <string>stream real time average</string>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="0" colspan="3">
+            <widget class="QCheckBox" name="cb_save_stream">
+             <property name="text">
+              <string>save stream data</string>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="0" colspan="4">
             <widget class="QTextBrowser" name="tb_monitor">
              <property name="maximumSize">
               <size>
@@ -991,8 +1025,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>965</width>
-     <height>37</height>
+     <width>996</width>
+     <height>24</height>
     </rect>
    </property>
   </widget>

@@ -12,8 +12,8 @@ import sys
 sys.path.append("../GaGePython")
 
 # need to be on Windows with GaGe drivers installed
-import Acquire
-import mp_stream
+# import Acquire
+# import mp_stream
 
 
 buffer_size_to_sample_size = lambda x: x / 2
@@ -72,6 +72,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # connections
         self.pb_gage_acquire.clicked.connect(self.acquire)
         self.pb_calc_ppifg.clicked.connect(self.calc_ppifg)
+        self.pb_gage_stream.clicked.connect(self.stream)
 
     def read_config_stream(self):
         config = self.config_stream
@@ -260,6 +261,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return sample_size_to_buffer_size(default_samplesize)
 
     @property
+    def savebuffersize(self):
+        try:
+            samplesize = int(self.le_savebuffersize.text())
+            return sample_size_to_buffer_size(samplesize)
+        except Exception as e:
+            print("Error:", e)
+
+            default_samplesize = 2**14 * 100  # save 100
+            self.le_buffersize.setText(str(default_samplesize))
+            return sample_size_to_buffer_size(default_samplesize)
+
+    @property
     def samplerate_acquire(self):
         try:
             return int(self.tw_acquire.item(2, 0).text())
@@ -355,7 +368,42 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.ppifg2 = ppifg2
 
     def stream(self):
-        pass
+        args = []
+        if self.cb_average.isChecked():
+            samplebuffersize = buffer_size_to_sample_size(self.buffersize)
+
+            if samplebuffersize <= self.segmentsize:
+                msg = "for averaging, you need buffersize > segmentsize"
+                self.tb_monitor.setText(msg)
+                return
+
+            if samplebuffersize % self.segmentsize != 0:
+                samplebuffersize = np.ceil(
+                    np.round(samplebuffersize / self.segmentsize) * self.segmentsize
+                )
+                self.le_buffersize.setText(str(samplebuffersize))
+                msg = "buffersize was adjusted to be integer multiple of segmentsize"
+                self.tb_monitor.setText(msg)
+
+            modes_doanalysis = ["save average", "average"]
+            args += [self.segmentsize]
+
+        else:
+            modes_doanalysis = ["save", "pass"]
+
+        if self.cb_save_stream.isChecked():
+            if self.savebuffersize < self.buffersize:
+                raise ValueError("save buffer size must be >= buffersize")
+                return
+
+            mode_doanalysis = modes_doanalysis[0]
+            args += [self.savebuffersize, self.stream_stop_event]
+
+        else:
+            mode_doanalysis = modes_doanalysis[1]
+
+        args = [mode_doanalysis] + args
+        print("ready for stream!")
 
     def save_acquire(self):
         pass
