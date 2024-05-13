@@ -68,6 +68,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.stream_stop_event = mp.Event()
         self.stream_error_event = mp.Event()
         self.N_analysis_threads = 2
+        self.mp_values = []
+        self.mp_arrays = []
+        self.process_stream = None
 
         # connections
         self.pb_gage_acquire.clicked.connect(self.acquire)
@@ -369,6 +372,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.ppifg2 = ppifg2
 
     def stream(self):
+        if self.stream_start_event.is_set():
+            self.tb_monitor.setText("stop the active stream")
+            return
+
+        # ===== doanalysis args ===============================================
         args_doanalysis = []
         samplebuffersize = buffer_size_to_sample_size(self.buffersize)
 
@@ -394,7 +402,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         if self.cb_save_stream.isChecked():
             if self.saveArraySize < samplebuffersize:
-                raise ValueError("save buffer size must be >= buffersize")
+                self.tb_monitor.setText("save buffer size must be >= buffersize")
                 return
 
             mode_doanalysis = modes_doanalysis[0]
@@ -404,17 +412,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             mode_doanalysis = modes_doanalysis[1]
 
         args_doanalysis = [mode_doanalysis] + args_doanalysis
-        # print(args_doanalysis)
 
+        # ===== mp arrays =====================================================
         if self.cb_average.isChecked():
             if self.cb_save_stream.isChecked():
-                mp_arrays = [mp.Array("q", self.saveArraySize)]
+                self.mp_arrays = [mp.Array("q", self.saveArraySize)]
             else:
-                mp_arrays = [mp.Array("q", self.segmentsize)]
+                self.mp_arrays = [mp.Array("q", self.segmentsize)]
+        elif self.cb_save_stream.isChecked():
+            self.mp_arrays = [mp.Array("q", self.saveArraySize)]
         else:
-            mp_arrays = []
-        mp_values = [mp.Value("q")]
+            self.mp_arrays = []
+        self.mp_values = [mp.Value("q")]
 
+        # ===== start stream ==================================================
         inifile = "../GaGe_Python/Stream2Analysis.ini"
         args = (
             inifile,
@@ -424,13 +435,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.stream_stop_event,
             self.stream_error_event,
             self.N_analysis_threads,
-            mp_values,
-            mp_arrays,
+            self.mp_values,
+            self.mp_arrays,
             args_doanalysis,
         )
 
-        process = mp.Process(target=mp_stream.stream, args=args)
-        process.start()
+        self.process_stream = mp.Process(target=mp_stream.stream, args=args)
+        self.process_stream.start()
 
     def save_acquire(self):
         pass

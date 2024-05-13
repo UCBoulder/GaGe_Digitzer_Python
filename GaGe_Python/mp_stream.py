@@ -317,10 +317,10 @@ def stream(
     Args:
         inifile (string): path to inifle
         buffersize (int): streaming buffer size to allocate
-        stream_ready_event (mp.Event): stream is ready, set by this function
-        stream_start_event (mp.Event): stream started, set by this function
-        stream_stop_event (mp.Event): stream stopped by user, checked by this function
-        stream_error_event (mp.Event): stream error, set by this function
+        stream_ready_event (mp.Event): stream is ready
+        stream_start_event (mp.Event): stream started
+        stream_stop_event (mp.Event): stream stopped
+        stream_error_event (mp.Event): stream error
         N_threads (int, optional): Description
         mp_values (list, optional): list of mp.Value's for real-time analysis
         mp_arrays (list, optional): list of mp.Array's for real-time analysis
@@ -533,6 +533,11 @@ def stream(
     PyGage.FreeStreamingBuffer(handle, card_index, buffer4)
     PyGage.FreeSystem(handle)
 
+    stream_ready_event.clear()
+    stream_start_event.clear()
+    stream_error_event.clear()
+    stream_stop_event.clear()
+
 
 def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *args):
     """
@@ -606,6 +611,7 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *a
 
     (mp_values,) = mp_values
     mp_values.value = g_cardTotalData[0]
+
 
 # %% ===== testing ============================================================
 # buffer_size_to_sample_size = lambda x: x / 2
