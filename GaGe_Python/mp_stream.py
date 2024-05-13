@@ -515,6 +515,10 @@ def stream(
         if loop_count == 1000:
             done = True
 
+    PyGage.FreeStreamingBuffer(handle, card_index, buffer1)
+    PyGage.FreeStreamingBuffer(handle, card_index, buffer2)
+    PyGage.FreeStreamingBuffer(handle, card_index, buffer3)
+    PyGage.FreeStreamingBuffer(handle, card_index, buffer4)
     PyGage.FreeSystem(handle)
 
 
