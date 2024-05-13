@@ -558,19 +558,6 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *a
     """
     (mode, *args_remaining) = args
     buffer = np.frombuffer(workbuffer, np.int16)
-    # print(buffer.size)
-
-    if mode == "save":
-        (totalbuffersize, stream_stop_event) = args_remaining
-        if loop_count * buffer.size == totalbuffersize:
-            stream_stop_event.set()
-            return
-
-        (X,) = mp_arrays
-        size = buffer.size
-        start = (loop_count - 1) * size
-        stop = loop_count * size
-        X[start:stop] = buffer
 
     if mode == "average":
         (ppifg,) = args_remaining
@@ -580,6 +567,41 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *a
         (X,) = mp_arrays
         X[:] = np.sum(buffer, axis=0)
 
+    if mode == "save_average":
+        (ppifg, savebuffersize, stream_stop_event) = args_remaining
+        N = int(buffer.size // ppifg)
+        size = int(N * ppifg)
+
+        if loop_count * size == savebuffersize:
+            stream_stop_event.set()
+        if loop_count * size > savebuffersize:
+            print("stop flag already set, skipping this one")
+            return
+
+        buffer.resize((N, ppifg))
+        summed = np.sum(buffer, axis=0)
+
+        (X,) = mp_arrays
+        start = (loop_count - 1) * size
+        stop = loop_count * size
+        X[start:stop] = summed
+
+    if mode == "save average":
+        (savebuffersize, stream_stop_event) = args_remaining
+        size = buffer.size
+
+        if loop_count * size == savebuffersize:
+            stream_stop_event.set()
+
+        if loop_count * size > savebuffersize:
+            print("stop flag already set, skipping this one")
+            return
+
+        (X,) = mp_arrays
+        start = (loop_count - 1) * size
+        stop = loop_count * size
+        X[start:stop] = buffer
+
     (mp_values,) = mp_values
     mp_values[:][0] = g_cardTotalData[0]
 
@@ -587,14 +609,25 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *a
 if __name__ == "__main__":
     N_avg = 100
     segmentsize = 77760
+
     stream_ready_event = mp.Event()
     stream_start_event = mp.Event()
     stream_stop_event = mp.Event()
     stream_error_event = mp.Event()
+
     N_analysis_threads = 2
 
-    mp_value = mp.Array("q", 1)
-    mp_array = mp.Array("q", segmentsize)
+    mode = "average"
+    mp_values = [mp.Array("q", 1)]
+
+    if mode == "average":
+        args_doanalysis = (mode, segmentsize)
+        mp_arrays = [mp.Array("q", segmentsize)]
+
+    if mode == "save average":
+        savebuffersize = segmentsize * 500
+        argsdoanalysis = (mode, stream_stop_event)
+        mp_arrays = [mp.Array("q", savebuffersize)]
 
     args = (
         inifile_default,
@@ -603,10 +636,10 @@ if __name__ == "__main__":
         stream_start_event,
         stream_stop_event,
         stream_error_event,
-        2,
-        [mp_value],
-        [mp_array],
-        ("average", segmentsize),
+        N_analysis_threads,
+        [mp_values],
+        [mp_arrays],
+        args_doanalysis,
     )
 
     process = mp.Process(target=stream, args=args)
