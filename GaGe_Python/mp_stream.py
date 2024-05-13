@@ -558,7 +558,6 @@ if __name__ == "__main__":
     #     inifile_default,
     #     buffersize,
     #     N_threads=2,
-    #     stop_on_fifo_full=stop_on_fifo_full,
     #     mp_values=[mp_totaldata],
     #     mp_arrays=[mp_buffer],
     #     args_doanalysis=(ppifg,),

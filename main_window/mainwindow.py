@@ -31,6 +31,15 @@ def _add_RemoteGraphicsView_to_layout(layoutWidget):
     return view, rplt
 
 
+def find_npts(x, level_percent):
+    level = x.max() * level_percent * 0.01
+    (idx,) = (x > level).nonzero()
+    spacing = np.diff(idx)
+    average_spacing = spacing[spacing > spacing.max() / 2].mean()
+    ppifg = int(np.round(average_spacing))
+    return average_spacing, ppifg
+
+
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super().__init__()
@@ -47,6 +56,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # connections
         self.pb_gage_acquire.clicked.connect(self.acquire)
+
+        self.x1 = None
+        self.x2 = None
+        self.ppifg1 = None
+        self.ppifg2 = None
 
     def read_config_stream(self):
         config = self.config_stream
@@ -266,6 +280,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.rplt_td_2.plot(t, x2, clear=True, _callSync="off")
                 self.rplt_fd_2.plot(freq, ft_x2, clear=True, _callSync="off")
 
+                self.x1 = x1
+                self.x2 = x2
+
             return x1, x2
 
         else:
@@ -279,7 +296,43 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.rplt_td_1.plot(t, x1, clear=True, _callSync="off")
                 self.rplt_fd_1.plot(freq, ft_x1, clear=True, _callSync="off")
 
+                self.x1 = x1
+
             return x1
+
+    def calc_ppifg(self):
+        try:
+            level_percent = float(self.tw_stream.item(27, 0).text())
+        except Exception as e:
+            print("Error:", e)
+            return
+
+        if self.mode_acquire == 2:
+            ch1_missing = False
+            ch2_missing = False
+            if self.x1 is None:
+                ch1_missing = True
+            if self.x2 is None:
+                ch2_missing = True
+            ch_missing = [ch1_missing, ch2_missing]
+
+            if all(ch_missing):
+                self.tb_monitor.setText("ch1 and ch2 not acquired")
+                return
+            else:
+                ch = np.asarray(["ch1", "ch2"], dtype=str)[ch_missing]
+                self.tb_monitor.setText(f"{ch} not acquired")
+                return
+
+            ppifg1_mean, ppifg1 = find_npts(self.x1, level_percent)
+            ppifg2_mean, ppifg2 = find_npts(self.x2, level_percent)
+
+            self.tb_monitor.settExt(
+                f"ch1 ppifg: {np.round(ppifg1_mean, 3)} \n ch2 ppifg: {np.round(ppifg2_mean, 3)}"
+            )
+
+            self.ppifg1 = ppifg1
+            self.ppifg2 = ppifg2
 
 
 if __name__ == "__main__":
