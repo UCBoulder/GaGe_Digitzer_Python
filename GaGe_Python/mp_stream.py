@@ -607,54 +607,54 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *a
     (mp_values,) = mp_values
     mp_values.value = g_cardTotalData[0]
 
+# %% ===== testing ============================================================
+# buffer_size_to_sample_size = lambda x: x / 2
+# sample_size_to_buffer_size = lambda x: x * 2
 
-buffer_size_to_sample_size = lambda x: x / 2
-sample_size_to_buffer_size = lambda x: x * 2
+# if __name__ == "__main__":
+#     segmentsize = 77760
 
-if __name__ == "__main__":
-    segmentsize = 77760
+#     stream_ready_event = mp.Event()
+#     stream_start_event = mp.Event()
+#     stream_stop_event = mp.Event()
+#     stream_error_event = mp.Event()
 
-    stream_ready_event = mp.Event()
-    stream_start_event = mp.Event()
-    stream_stop_event = mp.Event()
-    stream_error_event = mp.Event()
+#     N_analysis_threads = 2
 
-    N_analysis_threads = 2
+#     mode = "save"
+#     N_avg = 500
+#     N_save = 500
+#     mp_values = [mp.Value("q")]
 
-    mode = "save"
-    N_avg = 500
-    N_save = 500
-    mp_values = [mp.Value("q")]
+#     if mode == "average":
+#         buffersize = sample_size_to_buffer_size(segmentsize * N_avg)
+#         args_doanalysis = (mode, segmentsize)
+#         mp_arrays = [mp.Array("q", segmentsize)]
 
-    if mode == "average":
-        buffersize = sample_size_to_buffer_size(segmentsize * N_avg)
-        args_doanalysis = (mode, segmentsize)
-        mp_arrays = [mp.Array("q", segmentsize)]
+#     if mode == "save average":
+#         buffersize = sample_size_to_buffer_size(segmentsize * N_avg)
+#         savebuffersize = segmentsize * N_save
+#         args_doanalysis = (mode, segmentsize, savebuffersize, stream_stop_event)
+#         mp_arrays = [mp.Array("q", savebuffersize)]
 
-    if mode == "save average":
-        buffersize = sample_size_to_buffer_size(segmentsize * N_avg)
-        savebuffersize = segmentsize * N_save
-        args_doanalysis = (mode, segmentsize, savebuffersize, stream_stop_event)
-        mp_arrays = [mp.Array("q", savebuffersize)]
+#     if mode == "save":
+#         buffersize = sample_size_to_buffer_size(segmentsize)
+#         savebuffersize = segmentsize * N_save
+#         args_doanalysis = (mode, savebuffersize, stream_stop_event)
+#         mp_arrays = [mp.Array("q", savebuffersize)]
 
-    if mode == "save":
-        buffersize = sample_size_to_buffer_size(segmentsize)
-        savebuffersize = segmentsize * N_save
-        args_doanalysis = (mode, savebuffersize, stream_stop_event)
-        mp_arrays = [mp.Array("q", savebuffersize)]
+#     args = (
+#         inifile_default,
+#         buffersize,
+#         stream_ready_event,
+#         stream_start_event,
+#         stream_stop_event,
+#         stream_error_event,
+#         N_analysis_threads,
+#         mp_values,
+#         mp_arrays,
+#         args_doanalysis,
+#     )
 
-    args = (
-        inifile_default,
-        buffersize,
-        stream_ready_event,
-        stream_start_event,
-        stream_stop_event,
-        stream_error_event,
-        N_analysis_threads,
-        mp_values,
-        mp_arrays,
-        args_doanalysis,
-    )
-
-    process = mp.Process(target=stream, args=args)
-    process.start()
+#     process = mp.Process(target=stream, args=args)
+#     process.start()

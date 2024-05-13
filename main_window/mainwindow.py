@@ -9,11 +9,11 @@ import threading
 import multiprocessing as mp
 import sys
 
-sys.path.append("../GaGePython")
+sys.path.append("../GaGe_Python")
 
 # need to be on Windows with GaGe drivers installed
-# import Acquire
-# import mp_stream
+import Acquire
+import mp_stream
 
 
 buffer_size_to_sample_size = lambda x: x / 2
@@ -369,7 +369,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.ppifg2 = ppifg2
 
     def stream(self):
-        args = []
+        args_doanalysis = []
         samplebuffersize = buffer_size_to_sample_size(self.buffersize)
 
         if self.cb_average.isChecked():
@@ -387,7 +387,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.tb_monitor.setText(msg)
 
             modes_doanalysis = ["save average", "average"]
-            args += [self.segmentsize]
+            args_doanalysis += [self.segmentsize]
 
         else:
             modes_doanalysis = ["save", "pass"]
@@ -398,13 +398,39 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 return
 
             mode_doanalysis = modes_doanalysis[0]
-            args += [self.saveArraySize, self.stream_stop_event]
+            args_doanalysis += [self.saveArraySize, self.stream_stop_event]
 
         else:
             mode_doanalysis = modes_doanalysis[1]
 
-        args = [mode_doanalysis] + args
-        print("ready for stream!")
+        args_doanalysis = [mode_doanalysis] + args_doanalysis
+        # print(args_doanalysis)
+
+        if self.cb_average.isChecked():
+            if self.cb_save_stream.isChecked():
+                mp_arrays = [mp.Array("q", self.saveArraySize)]
+            else:
+                mp_arrays = [mp.Array("q", self.segmentsize)]
+        else:
+            mp_arrays = []
+        mp_values = [mp.Value("q")]
+
+        inifile = "../GaGe_Python/Stream2Analysis.ini"
+        args = (
+            inifile,
+            self.buffersize,
+            self.stream_ready_event,
+            self.stream_start_event,
+            self.stream_stop_event,
+            self.stream_error_event,
+            self.N_analysis_threads,
+            mp_values,
+            mp_arrays,
+            args_doanalysis,
+        )
+
+        process = mp.Process(target=mp_stream.stream, args=args)
+        process.start()
 
     def save_acquire(self):
         pass
