@@ -5,9 +5,11 @@ import pyqtgraph as pg
 from configparser import ConfigParser
 from numpy.fft import fftshift, ifftshift, rfft, irfft, rfftfreq
 import numpy as np
+import threading
+import multiprocessing as mp
 import sys
 
-sys.path.append("../GaGe_Python")
+sys.path.append("../GaGePython")
 
 # need to be on Windows with GaGe drivers installed
 import Acquire
@@ -59,6 +61,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.x2 = None
         self.ppifg1 = None
         self.ppifg2 = None
+
+        # multiprocessing Events
+        self.stream_ready_event = mp.Event()
+        self.stream_start_event = mp.Event()
+        self.stream_stop_event = mp.Event()
+        self.stream_error_event = mp.Event()
+        self.N_analysis_threads = 2
 
         # connections
         self.pb_gage_acquire.clicked.connect(self.acquire)
@@ -344,6 +353,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             self.ppifg1 = ppifg1
             self.ppifg2 = ppifg2
+
+    def stream(self):
+        pass
+
+    def save_acquire(self):
+        pass
+
+    def save_stream(self):
+        pass
 
 
 if __name__ == "__main__":
