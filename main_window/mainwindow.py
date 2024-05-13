@@ -321,7 +321,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if all(ch_missing):
                 self.tb_monitor.setText("ch1 and ch2 not acquired")
                 return
-            else:
+            elif any(ch_missing):
                 ch = np.asarray(["ch1", "ch2"], dtype=str)[ch_missing]
                 self.tb_monitor.setText(f"{ch} not acquired")
                 return
