@@ -567,7 +567,7 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *a
         (X,) = mp_arrays
         X[:] = np.sum(buffer, axis=0)
 
-    if mode == "save_average":
+    if mode == "save average":
         (ppifg, savebuffersize, stream_stop_event) = args_remaining
         N = int(buffer.size // ppifg)
         size = int(N * ppifg)
@@ -586,7 +586,7 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *a
         stop = loop_count * size
         X[start:stop] = summed
 
-    if mode == "save average":
+    if mode == "save":
         (savebuffersize, stream_stop_event) = args_remaining
         size = buffer.size
 
