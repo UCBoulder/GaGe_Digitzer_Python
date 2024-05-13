@@ -54,13 +54,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.read_config_stream()
         self.read_config_acquire()
 
-        # connections
-        self.pb_gage_acquire.clicked.connect(self.acquire)
-
+        # variable declarations
         self.x1 = None
         self.x2 = None
         self.ppifg1 = None
         self.ppifg2 = None
+
+        # connections
+        self.pb_gage_acquire.clicked.connect(self.acquire)
+        self.pb_calc_ppifg.clicked.connect(self.calc_ppifg)
 
     def read_config_stream(self):
         config = self.config_stream
