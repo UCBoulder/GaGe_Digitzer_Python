@@ -556,48 +556,56 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, ar
             tuple containing additional arguments you passed to the stream
             function that are needed by this DoAnalysis function
     """
-    pass
+    (mode, *args_remaining) = args
+    buffer = None
+
+    if mode == "save":
+        (totalbuffersize, stream_stop_event) = args_remaining
+        if loop_count * buffer.size == totalbuffersize:
+            stream_stop_event.set()
+            return
+
+        (X,) = mp_arrays
+        size = buffer.size
+        start = (loop_count - 1) * size
+        stop = loop_count * size
+        X[start:stop] = buffer
+
+    if mode == "average":
+        (ppifg,) = args_remaining
+        N = int(buffer.size // ppifg)
+        buffer.resize((N, ppifg))
+
+        (X,) = mp_arrays
+        X[:] = np.sum(buffer, axis=0)
+
+    (mp_values,) = mp_values
+    mp_values[:] = g_cardTotalData[0]
 
 
 if __name__ == "__main__":
-    ppifg = 2**16  # average segment size
-    buffersize = int(ppifg * 1000 * 2)
-    mp_totaldata = mp.Value("q")
-    mp_buffer = mp.Array("q", ppifg)
-
-    N_threads = 2
-
+    N_avg = 100
+    segmentsize = 2**14
     stream_ready_event = mp.Event()
     stream_start_event = mp.Event()
     stream_stop_event = mp.Event()
     stream_error_event = mp.Event()
     N_analysis_threads = 2
 
-    # modeled after:
-    # stream(
-    #     inifile_default,
-    #     buffersize,
-    #     stream_ready_event,
-    #     stream_start_event,
-    #     stream_stop_event,
-    #     stream_error_event,
-    #     N_threads=N_analysis_threads,
-    #     mp_values=[mp_totaldata],
-    #     mp_arrays=[mp_buffer],
-    #     args_doanalysis=(ppifg,),
-    # )
+    mp_value = mp.Array("q", 1)
+    mp_array = mp.Array("q", segmentsize)
 
     args = (
         inifile_default,
-        buffersize,
+        segmentsize * N_avg * 2,
         stream_ready_event,
         stream_start_event,
         stream_stop_event,
         stream_error_event,
         2,
-        [mp_totaldata],
-        [mp_buffer],
-        (ppifg,),
+        [mp_value],
+        [mp_array],
+        ("average", segmentsize),
     )
 
     process = mp.Process(target=stream, args=args)
