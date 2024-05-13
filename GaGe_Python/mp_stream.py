@@ -570,11 +570,10 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *a
     if mode == "save average":
         (ppifg, savebuffersize, stream_stop_event) = args_remaining
         N = int(buffer.size // ppifg)
-        size = int(N * ppifg)
 
-        if loop_count * size == savebuffersize:
+        if loop_count * ppifg == savebuffersize:
             stream_stop_event.set()
-        if loop_count * size > savebuffersize:
+        if loop_count * ppifg > savebuffersize:
             print("stop flag already set, skipping this one")
             return
 
@@ -582,8 +581,8 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *a
         summed = np.sum(buffer, axis=0)
 
         (X,) = mp_arrays
-        start = (loop_count - 1) * size
-        stop = loop_count * size
+        start = (loop_count - 1) * ppifg
+        stop = loop_count * ppifg
         X[start:stop] = summed
 
     if mode == "save":
