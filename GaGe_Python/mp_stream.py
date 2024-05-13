@@ -631,6 +631,11 @@ if __name__ == "__main__":
         args_doanalysis = (mode, segmentsize, savebuffersize, stream_stop_event)
         mp_arrays = [mp.Array("q", savebuffersize)]
 
+    if mode == "save":
+        savebuffersize = segmentsize * 500
+        args_doanalysis = (mode, savebuffersize, stream_stop_event)
+        mp_arrays = [mp.Array("q", savebuffersize)]
+
     args = (
         inifile_default,
         segmentsize * N_avg * 2,
