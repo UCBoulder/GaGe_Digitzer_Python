@@ -534,7 +534,7 @@ def stream(
     PyGage.FreeSystem(handle)
 
 
-def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, args):
+def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *args):
     """
     Do analysis on stream work buffer
 
@@ -557,7 +557,8 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, ar
             function that are needed by this DoAnalysis function
     """
     (mode, *args_remaining) = args
-    buffer = None
+    buffer = np.frombuffer(workbuffer, np.int16)
+    # print(buffer.size)
 
     if mode == "save":
         (totalbuffersize, stream_stop_event) = args_remaining
@@ -580,12 +581,12 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, ar
         X[:] = np.sum(buffer, axis=0)
 
     (mp_values,) = mp_values
-    mp_values[:] = g_cardTotalData[0]
+    mp_values[:][0] = g_cardTotalData[0]
 
 
 if __name__ == "__main__":
     N_avg = 100
-    segmentsize = 2**14
+    segmentsize = 77760
     stream_ready_event = mp.Event()
     stream_start_event = mp.Event()
     stream_stop_event = mp.Event()
