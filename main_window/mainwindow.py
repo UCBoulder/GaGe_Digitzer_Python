@@ -261,16 +261,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return sample_size_to_buffer_size(default_samplesize)
 
     @property
-    def savebuffersize(self):
+    def saveArraySize(self):
         try:
             samplesize = int(self.le_savebuffersize.text())
-            return sample_size_to_buffer_size(samplesize)
+            return samplesize
         except Exception as e:
             print("Error:", e)
 
             default_samplesize = 2**14 * 100  # save 100
             self.le_buffersize.setText(str(default_samplesize))
-            return sample_size_to_buffer_size(default_samplesize)
+            return default_samplesize
 
     @property
     def samplerate_acquire(self):
@@ -369,9 +369,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def stream(self):
         args = []
-        if self.cb_average.isChecked():
-            samplebuffersize = buffer_size_to_sample_size(self.buffersize)
+        samplebuffersize = buffer_size_to_sample_size(self.buffersize)
 
+        if self.cb_average.isChecked():
             if samplebuffersize <= self.segmentsize:
                 msg = "for averaging, you need buffersize > segmentsize"
                 self.tb_monitor.setText(msg)
@@ -392,12 +392,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             modes_doanalysis = ["save", "pass"]
 
         if self.cb_save_stream.isChecked():
-            if self.savebuffersize < self.buffersize:
+            if self.saveArraySize < samplebuffersize:
                 raise ValueError("save buffer size must be >= buffersize")
                 return
 
             mode_doanalysis = modes_doanalysis[0]
-            args += [self.savebuffersize, self.stream_stop_event]
+            args += [self.saveArraySize, self.stream_stop_event]
 
         else:
             mode_doanalysis = modes_doanalysis[1]
