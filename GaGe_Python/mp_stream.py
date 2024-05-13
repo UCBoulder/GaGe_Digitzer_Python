@@ -301,6 +301,10 @@ def initialize_stream(inifile, buffersize):
 def stream(
     inifile,
     buffersize,
+    stream_ready_event,
+    stream_start_event,
+    stream_stop_event,
+    stream_error_event,
     N_threads=2,
     mp_values=[],
     mp_arrays=[],
@@ -311,8 +315,13 @@ def stream(
     passed to mp.Process
 
     Args:
-        inifile (TYPE): path to inifle
-        buffersize (TYPE): streaming buffer size to allocate
+        inifile (string): path to inifle
+        buffersize (int): streaming buffer size to allocate
+        stream_ready_event (mp.Event): stream is ready, set by this function
+        stream_start_event (mp.Event): stream started, set by this function
+        stream_stop_event (mp.Event): stream stopped by user, checked by this function
+        stream_error_event (mp.Event): stream error, set by this function
+        N_threads (int, optional): Description
         mp_values (list, optional): list of mp.Value's for real-time analysis
         mp_arrays (list, optional): list of mp.Array's for real-time analysis
         args_doanalysis (None, optional): any additional arguments to pass for real-time analysis
@@ -420,6 +429,8 @@ def stream(
     active_threads = [False for i in range(N_threads)]
     print(f"using {len(work_threads)} threads for analysis")
 
+    stream_ready_event.set()
+
     # start the capture!
     status = PyGage.StartCapture(handle)
     if status < 0:
@@ -427,6 +438,8 @@ def stream(
         print("Error: ", PyGage.GetErrorString(status))
         PyGage.FreeSystem(handle)
         raise SystemExit
+
+    stream_start_event.set()
 
     while not done and not stream_completed_success:
         # select which buffer to stream 2 (toggled in each loop count)
@@ -459,9 +472,11 @@ def stream(
             if STM_TRANSFER_ERROR_FIFOFULL & p[0]:
                 print("Fifo full detected on card ", card_index)
                 done = True
+                stream_error_event.set()
 
         else:  # error detected
             done = True
+            stream_error_event.set()
             if p == CS_STM_TRANSFER_TIMEOUT:
                 print("\nStream transfer timeout on card ", card_index)
             else:
@@ -507,10 +522,7 @@ def stream(
 
         work_buffer_active = True
 
-        # ===== optional stuff ================================================
-        if loop_count % 1 == 0:
-            print(loop_count)
-        if loop_count == 1000:
+        if stream_stop_event.is_set():
             done = True
 
     PyGage.FreeStreamingBuffer(handle, card_index, buffer1)
@@ -553,15 +565,26 @@ if __name__ == "__main__":
 
     N_threads = 2
 
+    stream_ready_event = mp.Event()
+    stream_start_event = mp.Event()
+    stream_stop_event = mp.Event()
+    stream_error_event = mp.Event()
+    N_analysis_threads = 2
+
     # modeled after:
-    # stream(
-    #     inifile_default,
-    #     buffersize,
-    #     N_threads=2,
-    #     mp_values=[mp_totaldata],
-    #     mp_arrays=[mp_buffer],
-    #     args_doanalysis=(ppifg,),
-    # )
+    stream(
+        inifile_default,
+        buffersize,
+        stream_ready_event,
+        stream_start_event,
+        stream_stop_event,
+        stream_error_event,
+        N_analysis_threads,
+        N_threads=2,
+        mp_values=[mp_totaldata],
+        mp_arrays=[mp_buffer],
+        args_doanalysis=(ppifg,),
+    )
 
     args = (
         inifile_default,
