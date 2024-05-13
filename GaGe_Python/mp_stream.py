@@ -602,7 +602,7 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *a
         X[start:stop] = buffer
 
     (mp_values,) = mp_values
-    mp_values[:][0] = g_cardTotalData[0]
+    mp_values.value = g_cardTotalData[0]
 
 
 if __name__ == "__main__":
@@ -617,7 +617,7 @@ if __name__ == "__main__":
     N_analysis_threads = 2
 
     mode = "save average"
-    mp_values = [mp.Array("q", 1)]
+    mp_values = [mp.Value("q")]
 
     if mode == "average":
         args_doanalysis = (mode, segmentsize)
@@ -636,8 +636,8 @@ if __name__ == "__main__":
         stream_stop_event,
         stream_error_event,
         N_analysis_threads,
-        [mp_values],
-        [mp_arrays],
+        mp_values,
+        mp_arrays,
         args_doanalysis,
     )
 
