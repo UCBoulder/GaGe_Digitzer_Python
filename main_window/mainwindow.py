@@ -315,6 +315,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 return
 
             ppifg1_mean, ppifg1 = find_npts(self.x1, level_percent)
+            self.tb_monitor.setText(f"ch1 ppifg: {np.round(ppifg1_mean, 5)}")
             self.ppifg1 = ppifg1
 
         if self.mode_acquire == 2:
