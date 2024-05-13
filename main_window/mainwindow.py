@@ -7,6 +7,8 @@ from numpy.fft import fftshift, ifftshift, rfft, irfft, rfftfreq
 import numpy as np
 import threading
 import multiprocessing as mp
+import time
+import PyQt5.QtCore as qtc
 import sys
 
 sys.path.append("../GaGe_Python")
@@ -18,6 +20,12 @@ import mp_stream
 
 buffer_size_to_sample_size = lambda x: x / 2
 sample_size_to_buffer_size = lambda x: x * 2
+
+
+class Signal(qtc.QObject):
+    toggle = qtc.pyqtSignal(object)
+    progress = qtc.pyqtSignal(object)
+    finished = qtc.pyqtSignal(object)
 
 
 def _add_RemoteGraphicsView_to_layout(layoutWidget):
@@ -71,11 +79,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.mp_values = []
         self.mp_arrays = []
         self.process_stream = None
+        self.acquiring_in_process = mp.Event()
 
         # connections
         self.pb_gage_acquire.clicked.connect(self.acquire)
         self.pb_calc_ppifg.clicked.connect(self.calc_ppifg)
         self.pb_gage_stream.clicked.connect(self.stream)
+        self.pb_stop_gage_stream.clicked.connect(self.stop_stream)
 
     def read_config_stream(self):
         config = self.config_stream
@@ -291,11 +301,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.tb_monitor.setText("Error:", e)
 
     def acquire(self, *args, plot=True):
+        if self.stream_start_event.is_set():
+            self.tb_monitor.setText("stop the active stream")
+            return
+
+        if self.acquiring_in_process.is_set():
+            self.tb_monitor.setText("wait for acquisition to finish")
+            return
+
         # write the latest config
         self.write_config_acquire()
 
         if self.mode_acquire == 2:
+            self.acquiring_in_process.set()
             x1, x2 = Acquire.acquire(self.segmentsize)
+            self.acquiring_in_process.clear()
 
             if plot:
                 # plotting
@@ -314,7 +334,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return x1, x2
 
         else:
+            self.acquiring_in_process.set()
             (x1,) = Acquire.acquire(self.segmentsize)
+            self.acquiring_in_process.clear()
 
             if plot:
                 # plotting
@@ -376,7 +398,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.tb_monitor.setText("stop the active stream")
             return
 
-        # ===== doanalysis args ===============================================
+        if self.acquiring_in_process.is_set():
+            self.tb_monitor.setText("wait for acquisition to finish")
+            return
+
+        # ===== doanalysis args and sanity checks =============================
         args_doanalysis = []
         samplebuffersize = buffer_size_to_sample_size(self.buffersize)
 
@@ -401,9 +427,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             modes_doanalysis = ["save", "pass"]
 
         if self.cb_save_stream.isChecked():
-            if self.saveArraySize < samplebuffersize:
-                self.tb_monitor.setText("save buffer size must be >= buffersize")
-                return
+            if self.cb_average.isChecked():
+                # saving averaged data, size >= segmentsize
+                if self.saveArraySize < self.segmentsize:
+                    self.tb_monitor.setText("save buffer size must be >= segment size")
+            else:
+                # saving raw data, size >= streaming buffer size
+                if self.saveArraySize < samplebuffersize:
+                    self.tb_monitor.setText(
+                        "save buffer size must be >= stream buffer size"
+                    )
+                    return
 
             mode_doanalysis = modes_doanalysis[0]
             args_doanalysis += [self.saveArraySize, self.stream_stop_event]
@@ -442,6 +476,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.process_stream = mp.Process(target=mp_stream.stream, args=args)
         self.process_stream.start()
+        self.tb_monitor.setText("stream started")
+
+    def stop_stream(self):
+        if self.stream_start_event.is_set():
+            self.stream_stop_event.set()
+            self.tb_monitor.setText("stream stopped by user")
+        else:
+            self.tb_monitor.setText("stream is already not running")
 
     def save_acquire(self):
         pass

@@ -531,6 +531,7 @@ def stream(
     PyGage.FreeStreamingBuffer(handle, card_index, buffer2)
     PyGage.FreeStreamingBuffer(handle, card_index, buffer3)
     PyGage.FreeStreamingBuffer(handle, card_index, buffer4)
+    PyGage.AbortCapture(handle)
     PyGage.FreeSystem(handle)
 
     stream_ready_event.clear()
