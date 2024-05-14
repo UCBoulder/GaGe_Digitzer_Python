@@ -505,7 +505,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         mp_array = self.mp_arrays[0]
         X = np.frombuffer(mp_array.get_obj(), np.int64)
         if self.mode_acquire == 2:
-            N = int(X // 2)
+            N = int(X.size // 2)
             X.resize((N, 2))
 
             x1 = X[:, 0]
