@@ -10,6 +10,7 @@ import multiprocessing as mp
 import time
 import PyQt5.QtCore as qtc
 import sys
+import PyQt5.QtWidgets as qt
 
 sys.path.append("../GaGe_Python")
 
@@ -73,7 +74,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.stream_start_event = mp.Event()
         self.stream_stop_event = mp.Event()
         self.stream_error_event = mp.Event()
-        self.N_analysis_threads = 2
+        self.N_analysis_threads = 3
         self.mp_values = []
         self.mp_arrays = []
         self.process_stream = None
@@ -84,6 +85,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pb_calc_ppifg.clicked.connect(self.calc_ppifg)
         self.pb_gage_stream.clicked.connect(self.stream)
         self.pb_stop_gage_stream.clicked.connect(self.stop_stream)
+        self.actionsave_acquire.triggered.connect(self.save_acquire)
+        self.actionsave_stream.triggered.connect(self.save_stream)
 
     def read_config_stream(self):
         config = self.config_stream
@@ -250,7 +253,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @property
     def segmentsize(self):
         try:
-            segmentsize = int(self.le_segmentsize.text())
+            segmentsize = int(float(self.le_segmentsize.text()))
             return segmentsize
         except Exception as e:
             self.tb_monitor.setText("Error:", e)
@@ -262,7 +265,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @property
     def buffersize(self):
         try:
-            samplesize = int(self.le_buffersize.text())
+            samplesize = int(float(self.le_buffersize.text()))
             return sample_size_to_buffer_size(samplesize)
         except Exception as e:
             self.tb_monitor.setText("Error:", e)
@@ -274,7 +277,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @property
     def saveArraySize(self):
         try:
-            samplesize = int(self.le_savebuffersize.text())
+            samplesize = int(float(self.le_savebuffersize.text()))
             return samplesize
 
         except Exception as e:
@@ -539,10 +542,47 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.rplt_fd_1.plot(freq, ft_x1, clear=True, _callSync="off")
 
     def save_acquire(self):
-        pass
+        if self.x1 is None:
+            self.tb_monitor.setText("ch1 not acquired")
+            return
+
+        (filename, *_) = qt.QFileDialog.getSaveFileName(
+            caption=f"Save Acquisition Data"
+        )
+        if filename == "":
+            return
+
+        np.save(filename + "_ch1.npy", self.x1)
+        if self.mode_acquire == 2:
+            if self.x2 is not None:
+                np.save(filename + "_ch2.npy", self.x2)
 
     def save_stream(self):
-        pass
+        if len(self.mp_arrays) == 0:
+            self.tb_monitor.setText("no stream acquired")
+            return
+
+        (filename, *_) = qt.QFileDialog.getSaveFileName(
+            caption=f"Save Acquisition Data"
+        )
+        if filename == "":
+            return
+
+        (X,) = self.mp_arrays
+        X = np.frombuffer(X.get_obj(), np.int64)
+        if self.mode_stream == 2:
+            N = int(X.size) // 2
+            X.resize((N, 2))
+
+            x1 = X[:, 0]
+            x2 = X[:, 1]
+        else:
+            x1 = X
+            x2 = None
+
+        np.save(filename + "_ch1.npy", x1)
+        if x2 is not None:
+            np.save(filename + "_ch2.npy", x2)
 
 
 class TrackUpdate(qtc.QThread):
@@ -572,6 +612,7 @@ class TrackUpdate(qtc.QThread):
 
     def timer_timeout(self):
         if not self.stream_error_event.is_set():
+            # ===== print out elapsed time and data rate ======================
             elapsed_time = time.time() - self.start_time
             hours = 0
             minutes = 0
@@ -593,8 +634,10 @@ class TrackUpdate(qtc.QThread):
                     total, rate, hours, minutes, seconds
                 )
 
-            self.signal_plot.sig.emit(None)
             self.signal_tb.sig.emit(s)
+
+            # ===== tell gui thread to update plots ===========================
+            self.signal_plot.sig.emit(None)
 
         if self.stream_error_event.is_set() or self.stream_stop_event.is_set():
             self.stream_ready_event.clear()
@@ -644,6 +687,7 @@ class TrackSave(qtc.QThread):
 
     def timer_timeout(self):
         if not self.stream_error_event.is_set():
+            # ===== print out elapsed time and data rate ======================
             elapsed_time = time.time() - self.start_time
             hours = 0
             minutes = 0
@@ -665,9 +709,11 @@ class TrackSave(qtc.QThread):
                     total, rate, hours, minutes, seconds
                 )
 
+            self.signal_tb.sig.emit(s)
+
+            # ===== update progress bar =======================================
             progress = self.total_data / self.saveArraySize
             self.signal_pb.sig.emit(int(np.round(progress * 100)))
-            self.signal_tb.sig.emit(s)
 
         if self.stream_error_event.is_set() or self.stream_stop_event.is_set():
             self.stream_ready_event.clear()
