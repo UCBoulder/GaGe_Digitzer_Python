@@ -537,7 +537,7 @@ def stream(
     stream_ready_event.clear()
     stream_start_event.clear()
     stream_error_event.clear()
-    stream_stop_event.set()
+    stream_stop_event.clear()
 
 
 def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *args):
