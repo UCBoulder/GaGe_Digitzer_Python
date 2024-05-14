@@ -475,12 +475,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
 
         if self.cb_save_stream.isChecked():
-            self.track_stream = TrackSave(
-                self,
-                100,
-            )
+            self.track_stream = TrackSave(self, 100)
             self.track_stream.signal_pb.sig.connect(self.update_progress_bar)
             self.track_stream.signal_tb.sig.connect(self.update_text_browser)
+            self.track_stream.start()
+        else:
+            self.track_stream = TrackSave(self, 100)
             self.track_stream.start()
 
         self.process_stream = mp.Process(target=mp_stream.stream, args=args)
@@ -520,13 +520,29 @@ class TrackUpdate(qtc.QThread):
         self.timer.timeout.connect(self.timer_timeout)
         self.timer.moveToThread(self)
 
+        self.mp_array = mainwindow.mp_arrays[0]
+
+        self.signal_plot = Signal()
+
+    def X(self):
+        return np.frombuffer(self.mp_array.get_obj(), np.int64)
+
     def run(self):
         self.timer.start(self.wait_time)
         loop = qtc.QEventLoop()
         loop.exec()
 
     def timer_timeout(self):
-        pass
+        self.signal_plot.sig.emit(self.X)
+
+        if self.stream_stop_event.is_set():
+            self.stream_ready_event.clear()
+            self.stream_start_event.clear()
+            self.stream_error_event.clear()
+            self.stream_stop_event.clear()
+
+            self.timer.stop()
+            self.exit()
 
 
 class TrackSave(qtc.QThread):
@@ -587,11 +603,11 @@ class TrackSave(qtc.QThread):
                 total, rate, hours, minutes, seconds
             )
 
-        if not self.stream_stop_event.is_set():
-            progress = self.total_data / self.saveArraySize
-            self.signal_pb.sig.emit(int(np.round(progress * 100)))
-            self.signal_tb.sig.emit(s)
-        else:
+        progress = self.total_data / self.saveArraySize
+        self.signal_pb.sig.emit(int(np.round(progress * 100)))
+        self.signal_tb.sig.emit(s)
+
+        if self.stream_stop_event.is_set():
             progress = self.total_data / self.saveArraySize
             self.signal_pb.sig.emit(int(np.round(progress * 100)))
             self.signal_tb.sig.emit(s)
