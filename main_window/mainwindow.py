@@ -564,7 +564,7 @@ class TrackUpdate(qtc.QThread):
         if not self.stream_error_event.is_set():
             self.signal_plot.sig.emit(None)
 
-        elif self.stream_error_event.is_set() or self.stream_stop_event.is_set():
+        if self.stream_error_event.is_set() or self.stream_stop_event.is_set():
             self.stream_ready_event.clear()
             self.stream_start_event.clear()
             self.stream_error_event.clear()
@@ -637,7 +637,7 @@ class TrackSave(qtc.QThread):
             self.signal_pb.sig.emit(int(np.round(progress * 100)))
             self.signal_tb.sig.emit(s)
 
-        elif self.stream_error_event.is_set() or self.stream_stop_event.is_set():
+        if self.stream_error_event.is_set() or self.stream_stop_event.is_set():
             self.stream_ready_event.clear()
             self.stream_start_event.clear()
             self.stream_error_event.clear()
