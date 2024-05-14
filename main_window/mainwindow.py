@@ -41,6 +41,8 @@ def _add_RemoteGraphicsView_to_layout(layoutWidget):
 
 
 def find_npts(x, level_percent):
+    # remove the DC component
+    x[:] -= x.mean()
     level = x.max() * level_percent * 0.01
     (idx,) = (x > level).nonzero()
     spacing = np.diff(idx)
