@@ -456,7 +456,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         elif self.cb_save_stream.isChecked():
             self.mp_arrays = [mp.Array("q", self.saveArraySize)]
         else:
-            self.mp_arrays = []
+            self.mp_arrays = [mp.Array("q", samplebuffersize)]
         self.mp_values = [mp.Value("q"), mp.Value("q")]
 
         # ===== start stream ==================================================
