@@ -342,6 +342,7 @@ def stream(
     if g_tickFrequency < 0:
         print("Error: ", PyGage.GetErrorString(g_tickFrequency))
         PyGage.FreeSystem(handle)
+        stream_error_event.set()
         raise SystemExit
 
     # after commit the sample size may change
@@ -355,6 +356,7 @@ def stream(
     if total_samples < 0 and total_samples != acq_config["SegmentSize"]:
         print("Error: ", PyGage.GetErrorString(total_samples))
         PyGage.FreeSystem(handle)
+        stream_error_event.set()
         raise SystemExit
 
     # convert from bytes -> samples and print it to screen
@@ -367,21 +369,33 @@ def stream(
     buffer1 = PyGage.GetStreamingBuffer(handle, card_index, app["BufferSize"])
     if isinstance(buffer1, int):
         print("Error getting streaming buffer 1: ", PyGage.GetErrorString(buffer1))
+        PyGage.FreeSystem(handle)
+        stream_error_event.set()
+        return
     buffer2 = PyGage.GetStreamingBuffer(handle, card_index, app["BufferSize"])
     if isinstance(buffer2, int):
         print("Error getting streaming buffer 2: ", PyGage.GetErrorString(buffer2))
         PyGage.FreeStreamingBuffer(handle, card_index, buffer1)
+        PyGage.FreeSystem(handle)
+        stream_error_event.set()
+        return
     buffer3 = PyGage.GetStreamingBuffer(handle, card_index, app["BufferSize"])
     if isinstance(buffer3, int):
         print("Error getting streaming buffer 2: ", PyGage.GetErrorString(buffer3))
         PyGage.FreeStreamingBuffer(handle, card_index, buffer1)
         PyGage.FreeStreamingBuffer(handle, card_index, buffer2)
+        PyGage.FreeSystem(handle)
+        stream_error_event.set()
+        return
     buffer4 = PyGage.GetStreamingBuffer(handle, card_index, app["BufferSize"])
     if isinstance(buffer4, int):
         print("Error getting streaming buffer 2: ", PyGage.GetErrorString(buffer4))
         PyGage.FreeStreamingBuffer(handle, card_index, buffer1)
         PyGage.FreeStreamingBuffer(handle, card_index, buffer2)
         PyGage.FreeStreamingBuffer(handle, card_index, buffer3)
+        PyGage.FreeSystem(handle)
+        stream_error_event.set()
+        return
 
     buffer_list = [buffer1, buffer2, buffer3, buffer4]
 
@@ -393,6 +407,14 @@ def stream(
     status = PyGage.GetSegmentTailSizeInBytes(handle)
     if status < 0:
         print("Error: ", PyGage.GetErrorString(status))
+        PyGage.FreeStreamingBuffer(handle, card_index, buffer1)
+        PyGage.FreeStreamingBuffer(handle, card_index, buffer2)
+        PyGage.FreeStreamingBuffer(handle, card_index, buffer3)
+        PyGage.FreeStreamingBuffer(handle, card_index, buffer4)
+        PyGage.FreeSystem(handle)
+        stream_error_event.set()
+        return
+
     segment_tail_size_in_bytes = status
     tail_left_over = 0
 
@@ -436,7 +458,12 @@ def stream(
     if status < 0:
         # get error string
         print("Error: ", PyGage.GetErrorString(status))
+        PyGage.FreeStreamingBuffer(handle, card_index, buffer1)
+        PyGage.FreeStreamingBuffer(handle, card_index, buffer2)
+        PyGage.FreeStreamingBuffer(handle, card_index, buffer3)
+        PyGage.FreeStreamingBuffer(handle, card_index, buffer4)
         PyGage.FreeSystem(handle)
+        stream_error_event.set()
         raise SystemExit
 
     stream_start_event.set()

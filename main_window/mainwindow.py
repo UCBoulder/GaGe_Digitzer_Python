@@ -555,6 +555,10 @@ class TrackUpdate(qtc.QThread):
 
         self.signal_plot = Signal()
 
+    @property
+    def stream_stopped(self):
+        return any([self.stream_error_event.is_set(), self.stream_stop_event.is_set()])
+
     def run(self):
         self.timer.start(self.wait_time)
         loop = qtc.QEventLoop()
@@ -563,7 +567,7 @@ class TrackUpdate(qtc.QThread):
     def timer_timeout(self):
         self.signal_plot.sig.emit(None)
 
-        if self.stream_stop_event.is_set():
+        if self.stream_stopped:
             self.stream_ready_event.clear()
             self.stream_start_event.clear()
             self.stream_error_event.clear()
@@ -603,6 +607,10 @@ class TrackSave(qtc.QThread):
     def total_data(self):
         return self.data_increment * self.loop_count.value
 
+    @property
+    def stream_stopped(self):
+        return any([self.stream_error_event.is_set(), self.stream_stop_event.is_set()])
+
     def run(self):
         self.start_time = time.time()
         self.timer.start(self.wait_time)
@@ -636,7 +644,7 @@ class TrackSave(qtc.QThread):
         self.signal_pb.sig.emit(int(np.round(progress * 100)))
         self.signal_tb.sig.emit(s)
 
-        if self.stream_stop_event.is_set():
+        if self.stream_stopped():
             progress = self.total_data / self.saveArraySize
             self.signal_pb.sig.emit(int(np.round(progress * 100)))
             self.signal_tb.sig.emit(s)
