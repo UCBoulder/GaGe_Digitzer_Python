@@ -613,7 +613,6 @@ class TrackSave(qtc.QThread):
         elapsed_time = time.time() - self.start_time
         hours = 0
         minutes = 0
-        print(elapsed_time)
 
         if elapsed_time > 0:
             total = self.total_data / 1000000 * 2
