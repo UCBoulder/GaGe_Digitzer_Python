@@ -476,6 +476,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             args_doanalysis,
         )
 
+        # ===== track card stream =============================================
         if self.cb_save_stream.isChecked():
             self.track_stream = TrackSave(self, 100)
             self.track_stream.signal_pb.sig.connect(self.update_progress_bar)
@@ -486,6 +487,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.track_stream.signal_plot.sig.connect(self.update_plots)
             self.track_stream.start()
 
+        # ===== start card stream =============================================
+        # an odd bug is that the track_stream doesn't always catch the error
+        # flag. This happens even when I start the track_stream thread first.
+        # I no longer clear any flags in mp_stream, so they should all be
+        # caught by the track_stream 🤷‍♂️
         self.process_stream = mp.Process(target=mp_stream.stream, args=args)
         self.process_stream.start()
         self.tb_monitor.setText("stream started")
