@@ -480,7 +480,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 100,
             )
             self.track_stream.signal_pb.sig.connect(self.update_progress_bar)
-            self.track_stream.sign_tb.sig.connect(self.update_text_browser)
+            self.track_stream.signal_tb.sig.connect(self.update_text_browser)
             self.track_stream.start()
 
         self.process_stream = mp.Process(target=mp_stream.stream, args=args)
