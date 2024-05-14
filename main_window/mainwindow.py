@@ -485,6 +485,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             self.track_stream = TrackUpdate(self, 100)
             self.track_stream.signal_plot.sig.connect(self.update_plots)
+            self.track_stream.signal_tb.sig.connect(self.update_text_browser)
             self.track_stream.start()
 
         # ===== start card stream =============================================
@@ -560,15 +561,39 @@ class TrackUpdate(qtc.QThread):
         self.timer.moveToThread(self)
 
         self.signal_plot = Signal()
+        self.signal_tb = Signal()
 
     def run(self):
+        self.start_time = time.time()
         self.timer.start(self.wait_time)
         loop = qtc.QEventLoop()
         loop.exec()
 
     def timer_timeout(self):
         if not self.stream_error_event.is_set():
+            elapsed_time = time.time() - self.start_time
+            hours = 0
+            minutes = 0
+
+            if elapsed_time > 0:
+                total = self.total_data / 1000000 * 2
+                rate = total / elapsed_time
+
+                seconds = int(elapsed_time)  # elapsed time is in seconds
+                if seconds >= 60:  # seconds
+                    minutes = seconds // 60
+                    if minutes >= 60:
+                        hours = minutes // 60
+                        if hours > 0:
+                            minutes %= 60
+                    seconds %= 60
+
+                s = "Total: {0:.2f} MB, Rate: {1:6.2f} MB/s Elapsed time: {2:d}:{3:02d}:{4:02d}\r".format(
+                    total, rate, hours, minutes, seconds
+                )
+
             self.signal_plot.sig.emit(None)
+            self.signal_tb.sig.emit(s)
 
         if self.stream_error_event.is_set() or self.stream_stop_event.is_set():
             self.stream_ready_event.clear()
