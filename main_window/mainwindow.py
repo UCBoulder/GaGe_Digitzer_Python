@@ -555,19 +555,16 @@ class TrackUpdate(qtc.QThread):
 
         self.signal_plot = Signal()
 
-    @property
-    def stream_stopped(self):
-        return any([self.stream_error_event.is_set(), self.stream_stop_event.is_set()])
-
     def run(self):
         self.timer.start(self.wait_time)
         loop = qtc.QEventLoop()
         loop.exec()
 
     def timer_timeout(self):
-        self.signal_plot.sig.emit(None)
+        if not self.stream_error_event.is_set():
+            self.signal_plot.sig.emit(None)
 
-        if self.stream_stopped:
+        elif self.stream_error_event.is_set() or self.stream_stop_event.is_set():
             self.stream_ready_event.clear()
             self.stream_start_event.clear()
             self.stream_error_event.clear()
@@ -607,10 +604,6 @@ class TrackSave(qtc.QThread):
     def total_data(self):
         return self.data_increment * self.loop_count.value
 
-    @property
-    def stream_stopped(self):
-        return any([self.stream_error_event.is_set(), self.stream_stop_event.is_set()])
-
     def run(self):
         self.start_time = time.time()
         self.timer.start(self.wait_time)
@@ -618,36 +611,33 @@ class TrackSave(qtc.QThread):
         loop.exec()
 
     def timer_timeout(self):
-        elapsed_time = time.time() - self.start_time
-        hours = 0
-        minutes = 0
+        if not self.stream_error_event.is_set():
+            elapsed_time = time.time() - self.start_time
+            hours = 0
+            minutes = 0
 
-        if elapsed_time > 0:
-            total = self.total_data / 1000000 * 2
-            rate = total / elapsed_time
+            if elapsed_time > 0:
+                total = self.total_data / 1000000 * 2
+                rate = total / elapsed_time
 
-            seconds = int(elapsed_time)  # elapsed time is in seconds
-            if seconds >= 60:  # seconds
-                minutes = seconds // 60
-                if minutes >= 60:
-                    hours = minutes // 60
-                    if hours > 0:
-                        minutes %= 60
-                seconds %= 60
+                seconds = int(elapsed_time)  # elapsed time is in seconds
+                if seconds >= 60:  # seconds
+                    minutes = seconds // 60
+                    if minutes >= 60:
+                        hours = minutes // 60
+                        if hours > 0:
+                            minutes %= 60
+                    seconds %= 60
 
-            s = "Total: {0:.2f} MB, Rate: {1:6.2f} MB/s Elapsed time: {2:d}:{3:02d}:{4:02d}\r".format(
-                total, rate, hours, minutes, seconds
-            )
+                s = "Total: {0:.2f} MB, Rate: {1:6.2f} MB/s Elapsed time: {2:d}:{3:02d}:{4:02d}\r".format(
+                    total, rate, hours, minutes, seconds
+                )
 
-        progress = self.total_data / self.saveArraySize
-        self.signal_pb.sig.emit(int(np.round(progress * 100)))
-        self.signal_tb.sig.emit(s)
-
-        if self.stream_stopped:
             progress = self.total_data / self.saveArraySize
             self.signal_pb.sig.emit(int(np.round(progress * 100)))
             self.signal_tb.sig.emit(s)
 
+        elif self.stream_error_event.is_set() or self.stream_stop_event.is_set():
             self.stream_ready_event.clear()
             self.stream_start_event.clear()
             self.stream_error_event.clear()
