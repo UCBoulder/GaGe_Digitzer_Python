@@ -541,17 +541,38 @@ class TrackSave(qtc.QThread):
         loop = qtc.QEventLoop()
         loop.exec()
 
+        self.start_time = time.time()
+
     def timer_timeout(self):
+        elapsed_time = self.start_time - time.time()
+        hours = 0
+        minutes = 0
+
+        if self.parent.totalElapsedTime > 0:
+            total = self.total_data / 1000000
+            rate = total / elapsed_time
+
+            seconds = int(self.parent.totalElapsedTime)  # elapsed time is in seconds
+            if seconds >= 60:  # seconds
+                minutes = seconds // 60
+                if minutes >= 60:
+                    hours = minutes // 60
+                    if hours > 0:
+                        minutes %= 60
+                seconds %= 60
+
+            s = "Total: {0:.2f} MB, Rate: {1:6.2f} MB/s Elapsed time: {2:d}:{3:02d}:{4:02d}\r".format(
+                total, rate, hours, minutes, seconds
+            )
+
         if not self.stream_stop_event.is_set():
             progress = self.total_data / self.saveArraySize
             self.signal_pb.sig.emit(int(np.round(progress * 100)))
-            string = str(self.g_cardTotalData.value * 2 * 1e-9)
-            self.signal_tb.sig.emit(string)
+            self.signal_tb.sig.emit(s)
         else:
             progress = self.total_data / self.saveArraySize
             self.signal_pb.sig.emit(int(np.round(progress * 100)))
-            string = str(self.g_cardTotalData.value * 2 * 1e-9)
-            self.signal_tb.sig.emit(string)
+            self.signal_tb.sig.emit(s)
 
             self.stream_ready_event.clear()
             self.stream_start_event.clear()
