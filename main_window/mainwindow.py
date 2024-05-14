@@ -530,6 +530,7 @@ class TrackUpdate(qtc.QThread):
 
         self.signal_plot = Signal()
 
+    @property
     def X(self):
         return np.frombuffer(self.mp_array.get_obj(), np.int64)
 
