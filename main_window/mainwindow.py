@@ -503,8 +503,11 @@ class TrackSave(qtc.QThread):
     def __init__(self, mainwindow, wait_time):
         qtc.QThread.__init__(self)
 
-        self.saveArraySize = mainwindow.saveArraySize
+        self.stream_ready_event = mainwindow.stream_ready_event
+        self.stream_start_event = mainwindow.stream_start_event
+        self.stream_error_event = mainwindow.stream_error_event
         self.stream_stop_event = mainwindow.stream_stop_event
+        self.saveArraySize = mainwindow.saveArraySize
         self.wait_time = wait_time
 
         if mainwindow.cb_average.isChecked():
@@ -531,13 +534,18 @@ class TrackSave(qtc.QThread):
     def timer_timeout(self):
         if not self.stream_stop_event.is_set():
             progress = self.total_data / self.saveArraySize
-            self.sig.emit(int(np.round(progress * 100)))
+            self.signal.sig.emit(int(np.round(progress * 100)))
             print(progress)
         else:
             progress = self.total_data / self.saveArraySize
-            self.sig.emit(int(np.round(progress * 100)))
+            self.signal.sig.emit(int(np.round(progress * 100)))
             print(progress)
+
+            self.stream_ready_event.clear()
+            self.stream_start_event.clear()
+            self.stream_error_event.clear()
             self.stream_stop_event.clear()
+
             self.timer.stop()
             self.exit()
 
