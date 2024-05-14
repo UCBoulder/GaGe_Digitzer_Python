@@ -511,7 +511,7 @@ class TrackSave(qtc.QThread):
 
         self.signal = Signal()
 
-        self.timer = qtc.QTimer()
+        self.timer = qtc.QTimer(self)
         self.timer.timeout.connect(self.timer_timeout)
         self.timer.moveToThread(self)
 
