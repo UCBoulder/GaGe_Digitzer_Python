@@ -74,7 +74,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.stream_start_event = mp.Event()
         self.stream_stop_event = mp.Event()
         self.stream_error_event = mp.Event()
-        self.N_analysis_threads = 3
+        self.N_analysis_threads = 4
         self.mp_values = []
         self.mp_arrays = []
         self.process_stream = None

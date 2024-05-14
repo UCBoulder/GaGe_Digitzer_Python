@@ -485,7 +485,29 @@ def stream(
                 print("Error: ", PyGage.GetErrorString(status))
                 break
 
-        # ===== query for transfer status =====================================
+        # ==== after starting transfer, start work on the previous buffer =====
+        if work_buffer_active:
+            # I've verified that commenting this out doesn't speed things up.
+            # So it's not cuz it's hung up on a thread....
+            # wait for the thread if it is still held up
+            if active_threads[thread_count]:
+                work_threads[thread_count].join()
+                active_threads[thread_count] = False
+
+            # then start the thread on analyzing new data
+            args = (
+                loop_count,
+                g_cardTotalData,
+                stream_info.WorkBuffer,
+                mp_values,
+                mp_arrays,
+                *args_doanalysis,
+            )
+            work_threads[thread_count] = threading.Thread(target=DoAnalysis, args=args)
+            work_threads[thread_count].start()
+            active_threads[thread_count] = True
+
+        # ===== finish transfer of new data ===================================
         p = PyGage.GetStreamingTransferStatus(
             handle, card_index, app["TimeoutOnTransfer"]
         )
@@ -510,26 +532,8 @@ def stream(
                 print("5 Error: ", p)
                 print("5 Error: ", PyGage.GetErrorString(p))
 
-        # ===== Do Analysis ===================================================
-        if work_buffer_active:
-            # wait for the thread if it is still held up
-            if active_threads[thread_count]:
-                work_threads[thread_count].join()
-                active_threads[thread_count] = False
-
-            # then start the thread on analyzing new data
-            stream_info.WorkBuffer[:] = buffer[:]
-            args = (
-                loop_count,
-                g_cardTotalData,
-                stream_info.WorkBuffer,
-                mp_values,
-                mp_arrays,
-                *args_doanalysis,
-            )
-            work_threads[thread_count] = threading.Thread(target=DoAnalysis, args=args)
-            work_threads[thread_count].start()
-            active_threads[thread_count] = True
+        # ===== set the buffer with new data as the work buffer ===============
+        stream_info.WorkBuffer[:] = buffer[:]
 
         # ===== continue loop =================================================
         loop_count += 1
