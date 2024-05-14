@@ -481,6 +481,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.track_stream.start()
         else:
             self.track_stream = TrackSave(self, 100)
+            self.track_stream.signal_plot.sig.connect(self.update_plots)
             self.track_stream.start()
 
         self.process_stream = mp.Process(target=mp_stream.stream, args=args)
@@ -499,6 +500,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def update_text_browser(self, msg):
         self.tb_monitor.setText(msg)
+
+    def update_plots(self, X):
+        print(X.size)
 
     def save_acquire(self):
         pass
