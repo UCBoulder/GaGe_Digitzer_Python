@@ -525,6 +525,7 @@ class TrackSave(qtc.QThread):
             progress = self.total_data.value / self.saveArraySize
             print(progress)
         else:
+            self.stream_stop_event.clear()
             self.timer.stop()
             self.exit()
 
