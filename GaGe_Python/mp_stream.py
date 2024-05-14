@@ -305,6 +305,7 @@ def stream(
     stream_start_event,
     stream_stop_event,
     stream_error_event,
+    stream_exit_event,
     N_threads=2,
     mp_values=[],
     mp_arrays=[],
@@ -564,6 +565,11 @@ def stream(
     PyGage.FreeStreamingBuffer(handle, card_index, buffer4)
     PyGage.AbortCapture(handle)
     PyGage.FreeSystem(handle)
+
+    # the tracking thread will wait for this flag before clearing all of the
+    # multiprocessing events. You don't want to clear all events here either
+    # because then the tracking thread won't know to stop
+    stream_exit_event.set()
 
 
 def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *args):

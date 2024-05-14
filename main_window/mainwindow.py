@@ -74,6 +74,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.stream_start_event = mp.Event()
         self.stream_stop_event = mp.Event()
         self.stream_error_event = mp.Event()
+        self.stream_exit_event = mp.Event()
         self.N_analysis_threads = 4
         self.mp_values = []
         self.mp_arrays = []
@@ -473,6 +474,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.stream_start_event,
             self.stream_stop_event,
             self.stream_error_event,
+            self.stream_exit_event,
             self.N_analysis_threads,
             self.mp_values,
             self.mp_arrays,
@@ -593,6 +595,7 @@ class TrackUpdate(qtc.QThread):
         self.stream_start_event = mainwindow.stream_start_event
         self.stream_error_event = mainwindow.stream_error_event
         self.stream_stop_event = mainwindow.stream_stop_event
+        self.stream_exit_event = mainwindow.stream_exit_event
 
         self.wait_time = wait_time
         self.g_cardTotalData = mainwindow.mp_values[0]
@@ -640,6 +643,11 @@ class TrackUpdate(qtc.QThread):
             self.signal_plot.sig.emit(None)
 
         if self.stream_error_event.is_set() or self.stream_stop_event.is_set():
+            # wait for the card stream process to stop before clearing all
+            # multiprocessing evnets
+            self.stream_exit_event.wait()
+
+            self.stream_exit_event.clear()
             self.stream_ready_event.clear()
             self.stream_start_event.clear()
             self.stream_error_event.clear()
@@ -657,6 +665,7 @@ class TrackSave(qtc.QThread):
         self.stream_start_event = mainwindow.stream_start_event
         self.stream_error_event = mainwindow.stream_error_event
         self.stream_stop_event = mainwindow.stream_stop_event
+        self.stream_exit_event = mainwindow.stream_exit_event
 
         self.saveArraySize = mainwindow.saveArraySize
         self.wait_time = wait_time
@@ -716,6 +725,11 @@ class TrackSave(qtc.QThread):
             self.signal_pb.sig.emit(int(np.round(progress * 100)))
 
         if self.stream_error_event.is_set() or self.stream_stop_event.is_set():
+            # wait for the card stream process to stop before clearing all
+            # multiprocessing evnets
+            self.stream_exit_event.wait()
+
+            self.stream_exit_event.clear()
             self.stream_ready_event.clear()
             self.stream_start_event.clear()
             self.stream_error_event.clear()
