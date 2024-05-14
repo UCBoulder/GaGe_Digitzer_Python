@@ -643,7 +643,7 @@ class TrackSave(qtc.QThread):
         self.signal_pb.sig.emit(int(np.round(progress * 100)))
         self.signal_tb.sig.emit(s)
 
-        if self.stream_stopped():
+        if self.stream_stopped:
             progress = self.total_data / self.saveArraySize
             self.signal_pb.sig.emit(int(np.round(progress * 100)))
             self.signal_tb.sig.emit(s)
