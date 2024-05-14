@@ -501,8 +501,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def update_text_browser(self, msg):
         self.tb_monitor.setText(msg)
 
-    def update_plots(self, X):
-        print(X.size)
+    def update_plots(self):
+        mp_array = self.mp_arrays[0]
+        X = np.frombuffer(mp_array.get_obj(), np.int64)
+        if self.mode_acquire == 2:
+            N = int(X // 2)
+            X.resize((N, 2))
+
+            x1 = X[:, 0]
+            x2 = X[:, 1]
+
+            # plotting
+            t = np.arange(x1.size) / self.samplerate_acquire
+            freq = rfftfreq(x1.size, d=1 / self.samplerate_acquire) * 1e-6
+            ft_x1 = abs(rfft(x1))
+            ft_x2 = abs(rfft(x2))
+            self.rplt_td_1.plot(t, x1, clear=True, _callSync="off")
+            self.rplt_fd_1.plot(freq, ft_x1, clear=True, _callSync="off")
+            self.rplt_td_2.plot(t, x2, clear=True, _callSync="off")
+            self.rplt_fd_2.plot(freq, ft_x2, clear=True, _callSync="off")
+
+        else:
+            x1 = X
+            t = np.arange(x1.size) / self.samplerate_acquire
+            freq = rfftfreq(x1.size, d=1 / self.samplerate_acquire) * 1e-6
+            ft_x1 = abs(rfft(x1))
+            self.rplt_td_1.plot(t, x1, clear=True, _callSync="off")
+            self.rplt_fd_1.plot(freq, ft_x1, clear=True, _callSync="off")
 
     def save_acquire(self):
         pass
@@ -526,13 +551,7 @@ class TrackUpdate(qtc.QThread):
         self.timer.timeout.connect(self.timer_timeout)
         self.timer.moveToThread(self)
 
-        self.mp_array = mainwindow.mp_arrays[0]
-
         self.signal_plot = Signal()
-
-    @property
-    def X(self):
-        return np.frombuffer(self.mp_array.get_obj(), np.int64)
 
     def run(self):
         self.timer.start(self.wait_time)
@@ -540,7 +559,7 @@ class TrackUpdate(qtc.QThread):
         loop.exec()
 
     def timer_timeout(self):
-        self.signal_plot.sig.emit(self.X)
+        self.signal_plot.sig.emit(None)
 
         if self.stream_stop_event.is_set():
             self.stream_ready_event.clear()
