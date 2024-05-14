@@ -537,18 +537,17 @@ class TrackSave(qtc.QThread):
         return self.data_increment * self.loop_count.value
 
     def run(self):
+        self.start_time = time.time()
         self.timer.start(self.wait_time)
         loop = qtc.QEventLoop()
         loop.exec()
-
-        self.start_time = time.time()
 
     def timer_timeout(self):
         elapsed_time = self.start_time - time.time()
         hours = 0
         minutes = 0
 
-        if self.parent.totalElapsedTime > 0:
+        if elapsed_time > 0:
             total = self.total_data / 1000000
             rate = total / elapsed_time
 
