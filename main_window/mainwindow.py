@@ -543,15 +543,16 @@ class TrackSave(qtc.QThread):
         loop.exec()
 
     def timer_timeout(self):
-        elapsed_time = self.start_time - time.time()
+        elapsed_time = time.time() - self.start_time
         hours = 0
         minutes = 0
+        print(elapsed_time)
 
         if elapsed_time > 0:
-            total = self.total_data / 1000000
+            total = self.total_data / 1000000 * 2
             rate = total / elapsed_time
 
-            seconds = int(self.parent.totalElapsedTime)  # elapsed time is in seconds
+            seconds = int(elapsed_time)  # elapsed time is in seconds
             if seconds >= 60:  # seconds
                 minutes = seconds // 60
                 if minutes >= 60:
