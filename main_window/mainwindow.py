@@ -402,7 +402,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # ===== doanalysis args and sanity checks =============================
         args_doanalysis = []
-        samplebuffersize = buffer_size_to_sample_size(self.buffersize)
+        samplebuffersize = int(buffer_size_to_sample_size(self.buffersize))
 
         if self.cb_average.isChecked():
             if samplebuffersize <= self.segmentsize:
