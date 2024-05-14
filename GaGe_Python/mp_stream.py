@@ -534,6 +534,8 @@ def stream(
     PyGage.AbortCapture(handle)
     PyGage.FreeSystem(handle)
 
+    # clear event flags
+    # let the stop event be caught by the tracking stream thread
     stream_ready_event.clear()
     stream_start_event.clear()
     stream_error_event.clear()

@@ -476,9 +476,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         if self.cb_save_stream.isChecked():
             self.track_stream = TrackSave(
-                self.mp_values[0],
-                self.saveArraySize,
-                self.stream_stop_event,
+                self,
                 100,
             )
             self.track_stream.start()
@@ -502,11 +500,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
 class TrackSave(qtc.QThread):
-    def __init__(self, total_data, saveArraySize, stream_stop_event, wait_time):
+    def __init__(self, mainwindow, wait_time):
         qtc.QThread.__init__(self)
-        self.total_data = total_data
-        self.saveArraySize = saveArraySize
-        self.stream_stop_event = stream_stop_event
+
+        self.total_data = mainwindow.mp_values[0]
+        self.saveArraySize = mainwindow.saveArraySize
+        self.stream_stop_event = mainwindow.stream_stop_event
         self.wait_time = wait_time
 
         self.signal = Signal()
