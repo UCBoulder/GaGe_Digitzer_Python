@@ -479,7 +479,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self,
                 100,
             )
-            self.track_stream.signal.sig.connect(self.update_progress_bar)
+            self.track_stream.signal_pb.sig.connect(self.update_progress_bar)
+            self.track_stream.sign_tb.sig.connect(self.update_text_browser)
             self.track_stream.start()
 
         self.process_stream = mp.Process(target=mp_stream.stream, args=args)
@@ -495,6 +496,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def update_progress_bar(self, val):
         self.pb.setValue(val)
+
+    def update_text_browser(self, msg):
+        self.tb_monitor.setText(msg)
 
     def save_acquire(self):
         pass
@@ -514,13 +518,15 @@ class TrackSave(qtc.QThread):
         self.saveArraySize = mainwindow.saveArraySize
         self.wait_time = wait_time
 
+        self.g_cardTotalData = mainwindow.mp_values[0]
         if mainwindow.cb_average.isChecked():
             self.data_increment = mainwindow.segmentsize
         else:
             self.data_increment = buffer_size_to_sample_size(mainwindow.buffersize)
         self.loop_count = mainwindow.mp_values[1]
 
-        self.signal = Signal()
+        self.signal_pb = Signal()
+        self.signal_tb = Signal()
 
         self.timer = qtc.QTimer()
         self.timer.timeout.connect(self.timer_timeout)
@@ -538,10 +544,14 @@ class TrackSave(qtc.QThread):
     def timer_timeout(self):
         if not self.stream_stop_event.is_set():
             progress = self.total_data / self.saveArraySize
-            self.signal.sig.emit(int(np.round(progress * 100)))
+            self.signal_pb.sig.emit(int(np.round(progress * 100)))
+            string = str(self.g_cardTotalData.value * 2 * 1e-9)
+            self.signal_tb.sig.emit(string)
         else:
             progress = self.total_data / self.saveArraySize
-            self.signal.sig.emit(int(np.round(progress * 100)))
+            self.signal_pb.sig.emit(int(np.round(progress * 100)))
+            string = str(self.g_cardTotalData.value * 2 * 1e-9)
+            self.signal_tb.sig.emit(string)
 
             self.stream_ready_event.clear()
             self.stream_start_event.clear()
