@@ -610,8 +610,9 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *a
         with X.get_lock():
             X[start:stop] = buffer
 
-    (mp_values,) = mp_values
-    mp_values.value = g_cardTotalData[0]
+    (mp_total_data, mp_loop_count) = mp_values
+    mp_total_data.value = g_cardTotalData[0]
+    mp_loop_count.value = loop_count
 
 
 # %% ===== testing ============================================================

@@ -23,9 +23,7 @@ sample_size_to_buffer_size = lambda x: x * 2
 
 
 class Signal(qtc.QObject):
-    toggle = qtc.pyqtSignal(object)
-    progress = qtc.pyqtSignal(object)
-    finished = qtc.pyqtSignal(object)
+    sig = qtc.pyqtSignal(object)
 
 
 def _add_RemoteGraphicsView_to_layout(layoutWidget):
@@ -431,6 +429,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 # saving averaged data, size >= segmentsize
                 if self.saveArraySize < self.segmentsize:
                     self.tb_monitor.setText("save buffer size must be >= segment size")
+                    return
+
             else:
                 # saving raw data, size >= streaming buffer size
                 if self.saveArraySize < samplebuffersize:
@@ -457,7 +457,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.mp_arrays = [mp.Array("q", self.saveArraySize)]
         else:
             self.mp_arrays = []
-        self.mp_values = [mp.Value("q")]
+        self.mp_values = [mp.Value("q"), mp.Value("q")]
 
         # ===== start stream ==================================================
         inifile = "../GaGe_Python/Stream2Analysis.ini"
@@ -473,6 +473,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.mp_arrays,
             args_doanalysis,
         )
+
+        if self.cb_save_stream.isChecked():
+            self.track_stream = TrackSave(
+                self.mp_values[0],
+                self.saveArraySize,
+                self.stream_stop_event,
+                100,
+            )
+            self.track_stream.start()
 
         self.process_stream = mp.Process(target=mp_stream.stream, args=args)
         self.process_stream.start()
@@ -490,6 +499,34 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def save_stream(self):
         pass
+
+
+class TrackSave(qtc.QThread):
+    def __init__(self, total_data, saveArraySize, stream_stop_event, wait_time):
+        qtc.QThread.__init__(self)
+        self.total_data = total_data
+        self.saveArraySize = saveArraySize
+        self.stream_stop_event = stream_stop_event
+        self.wait_time = wait_time
+
+        self.signal = Signal()
+
+        self.timer = qtc.QTimer()
+        self.timer.timeout.connect(self.timer_timeout)
+        self.timer.moveToThread(self)
+
+    def run(self):
+        self.timer.start(self.wait_time)
+        loop = qtc.QEventLoop()
+        loop.exec()
+
+    def timer_timeout(self):
+        if not self.stream_stop_event.is_set():
+            progress = self.total_data.value / self.saveArraySize
+            print(progress)
+        else:
+            self.timer.stop()
+            self.exit()
 
 
 if __name__ == "__main__":
