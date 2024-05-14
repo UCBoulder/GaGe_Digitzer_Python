@@ -506,7 +506,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def update_plots(self):
         mp_array = self.mp_arrays[0]
         X = np.frombuffer(mp_array.get_obj(), np.int64)
-        if self.mode_acquire == 2:
+        if self.mode_stream == 2:
             N = int(X.size // 2)
             X.resize((N, 2))
 
@@ -514,8 +514,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             x2 = X[:, 1]
 
             # plotting
-            t = np.arange(x1.size) / self.samplerate_acquire
-            freq = rfftfreq(x1.size, d=1 / self.samplerate_acquire) * 1e-6
+            t = np.arange(x1.size) / self.samplerate_stream
+            freq = rfftfreq(x1.size, d=1 / self.samplerate_stream) * 1e-6
             ft_x1 = abs(rfft(x1))
             ft_x2 = abs(rfft(x2))
             self.rplt_td_1.plot(t, x1, clear=True, _callSync="off")
@@ -525,8 +525,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         else:
             x1 = X
-            t = np.arange(x1.size) / self.samplerate_acquire
-            freq = rfftfreq(x1.size, d=1 / self.samplerate_acquire) * 1e-6
+            t = np.arange(x1.size) / self.samplerate_stream
+            freq = rfftfreq(x1.size, d=1 / self.samplerate_stream) * 1e-6
             ft_x1 = abs(rfft(x1))
             self.rplt_td_1.plot(t, x1, clear=True, _callSync="off")
             self.rplt_fd_1.plot(freq, ft_x1, clear=True, _callSync="off")
