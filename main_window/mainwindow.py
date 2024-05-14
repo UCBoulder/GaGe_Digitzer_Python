@@ -479,6 +479,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self,
                 100,
             )
+            self.track_stream.signal.sig.connect(self.update_progress_bar)
             self.track_stream.start()
 
         self.process_stream = mp.Process(target=mp_stream.stream, args=args)
@@ -491,6 +492,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.tb_monitor.setText("stream stopped by user")
         else:
             self.tb_monitor.setText("stream is already not running")
+
+    def update_progress_bar(self, val):
+        self.pb.setValue(val)
 
     def save_acquire(self):
         pass
@@ -535,11 +539,9 @@ class TrackSave(qtc.QThread):
         if not self.stream_stop_event.is_set():
             progress = self.total_data / self.saveArraySize
             self.signal.sig.emit(int(np.round(progress * 100)))
-            print(progress)
         else:
             progress = self.total_data / self.saveArraySize
             self.signal.sig.emit(int(np.round(progress * 100)))
-            print(progress)
 
             self.stream_ready_event.clear()
             self.stream_start_event.clear()
