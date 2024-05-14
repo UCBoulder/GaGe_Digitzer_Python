@@ -400,6 +400,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.tb_monitor.setText("wait for acquisition to finish")
             return
 
+        self.write_config_stream()
+
         # ===== doanalysis args and sanity checks =============================
         args_doanalysis = []
         samplebuffersize = int(buffer_size_to_sample_size(self.buffersize))
