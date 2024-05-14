@@ -555,6 +555,7 @@ class TrackUpdate(qtc.QThread):
         self.stream_stop_event = mainwindow.stream_stop_event
 
         self.wait_time = wait_time
+        self.g_cardTotalData = mainwindow.mp_values[0]
 
         self.timer = qtc.QTimer()
         self.timer.timeout.connect(self.timer_timeout)
@@ -576,7 +577,7 @@ class TrackUpdate(qtc.QThread):
             minutes = 0
 
             if elapsed_time > 0:
-                total = self.total_data / 1000000 * 2
+                total = self.g_cardTotalData.value / 1000000 * 2
                 rate = total / elapsed_time
 
                 seconds = int(elapsed_time)  # elapsed time is in seconds
@@ -648,7 +649,7 @@ class TrackSave(qtc.QThread):
             minutes = 0
 
             if elapsed_time > 0:
-                total = self.total_data / 1000000 * 2
+                total = self.g_cardTotalData.value / 1000000 * 2
                 rate = total / elapsed_time
 
                 seconds = int(elapsed_time)  # elapsed time is in seconds
