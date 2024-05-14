@@ -507,6 +507,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         pass
 
 
+class TrackUpdate(qtc.QThread):
+    def __init__(self, mainwindow, wait_time):
+        qtc.QThread.__init__(self)
+
+        self.stream_ready_event = mainwindow.stream_ready_event
+        self.stream_start_event = mainwindow.stream_start_event
+        self.stream_error_event = mainwindow.stream_error_event
+        self.stream_stop_event = mainwindow.stream_stop_event
+
+        self.timer = qtc.QTimer()
+        self.timer.timeout.connect(self.timer_timeout)
+        self.timer.moveToThread(self)
+
+    def run(self):
+        self.timer.start(self.wait_time)
+        loop = qtc.QEventLoop()
+        loop.exec()
+
+    def timer_timeout(self):
+        pass
+
+
 class TrackSave(qtc.QThread):
     def __init__(self, mainwindow, wait_time):
         qtc.QThread.__init__(self)
