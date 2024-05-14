@@ -520,7 +520,7 @@ class TrackSave(qtc.QThread):
         self.timer.moveToThread(self)
 
     @property
-    def totaldata(self):
+    def total_data(self):
         return self.data_increment * self.loop_count.value
 
     def run(self):
@@ -531,8 +531,12 @@ class TrackSave(qtc.QThread):
     def timer_timeout(self):
         if not self.stream_stop_event.is_set():
             progress = self.total_data / self.saveArraySize
+            self.sig.emit(int(np.round(progress * 100)))
             print(progress)
         else:
+            progress = self.total_data / self.saveArraySize
+            self.sig.emit(int(np.round(progress * 100)))
+            print(progress)
             self.stream_stop_event.clear()
             self.timer.stop()
             self.exit()
