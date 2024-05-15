@@ -538,19 +538,21 @@ def stream(
 
         # ===== continue loop =================================================
         loop_count += 1
+        buffer_count = loop_count % len(buffer_list)
+        thread_count = (loop_count - 1) % len(work_threads)
 
         # increment the work buffer
-        if buffer_count == len(buffer_list) - 1:
-            buffer_count = 0
-        else:
-            buffer_count += 1
+        # if buffer_count == len(buffer_list) - 1:
+        #     buffer_count = 0
+        # else:
+        #     buffer_count += 1
 
-        # increment the thread count after the first loop
-        if work_buffer_active:
-            if thread_count == len(work_threads) - 1:
-                thread_count = 0
-            else:
-                thread_count += 1
+        # # increment the thread count after the first loop
+        # if work_buffer_active:
+        #     if thread_count == len(work_threads) - 1:
+        #         thread_count = 0
+        #     else:
+        #         thread_count += 1
 
         work_buffer_active = True
 
@@ -613,6 +615,7 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *a
         if loop_count * ppifg == savebuffersize:
             stream_stop_event.set()
         if loop_count * ppifg > savebuffersize:
+            stream_stop_event.set()
             print("stop flag already set, skipping this one")
             return
 
@@ -633,6 +636,7 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *a
             stream_stop_event.set()
 
         if loop_count * size > savebuffersize:
+            stream_stop_event.set()
             print("stop flag already set, skipping this one")
             return
 
@@ -645,6 +649,7 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *a
     elif mode == "pass":
         (X,) = mp_arrays
         X[:] = buffer
+        pass
 
     (mp_total_data, mp_loop_count) = mp_values
     mp_total_data.value = g_cardTotalData[0]
