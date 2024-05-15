@@ -293,16 +293,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @property
     def samplerate_acquire(self):
         try:
-            return int(self.tw_acquire.item(2, 0).text())
+            return int(float(self.tw_acquire.item(2, 0).text()))
         except Exception as e:
             self.tb_monitor.setText("Error:", e)
 
     @property
     def samplerate_stream(self):
         try:
-            return int(self.tw_stream.item(2, 0).text())
+            return int(float(self.tw_stream.item(2, 0).text()))
         except Exception as e:
             self.tb_monitor.setText("Error:", e)
+
+    @property
+    def plotsamplesize(self):
+        try:
+            return int(float(self.le_plotsamplesize.text()))
+        except Exception as e:
+            self.tb_monitor.setText("Error:", e)
+            return int(2**14)  # default plot sample size
 
     def acquire(self, *args, plot=True):
         if self.stream_start_event.is_set():
@@ -322,14 +330,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.acquiring_in_process.clear()
 
             if plot:
+                x1_plot = x1[: self.plotsamplesize]
+                x2_plot = x2[: self.plotsamplesize]
+
                 # plotting
-                t = np.arange(x1.size) / self.samplerate_acquire
-                freq = rfftfreq(x1.size, d=1 / self.samplerate_acquire) * 1e-6
-                ft_x1 = abs(rfft(x1))
-                ft_x2 = abs(rfft(x2))
-                self.rplt_td_1.plot(t, x1, clear=True, _callSync="off")
+                t = np.arange(x1_plot.size) / self.samplerate_acquire
+                freq = rfftfreq(x1_plot.size, d=1 / self.samplerate_acquire) * 1e-6
+                ft_x1 = abs(rfft(x1_plot))
+                ft_x2 = abs(rfft(x2_plot))
+                self.rplt_td_1.plot(t, x1_plot, clear=True, _callSync="off")
                 self.rplt_fd_1.plot(freq, ft_x1, clear=True, _callSync="off")
-                self.rplt_td_2.plot(t, x2, clear=True, _callSync="off")
+                self.rplt_td_2.plot(t, x2_plot, clear=True, _callSync="off")
                 self.rplt_fd_2.plot(freq, ft_x2, clear=True, _callSync="off")
 
                 self.x1 = x1
@@ -343,11 +354,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.acquiring_in_process.clear()
 
             if plot:
+                x1_plot = x1[: self.plotsamplesize]
+
                 # plotting
-                t = np.arange(x1.size) / self.samplerate_acquire
-                freq = rfftfreq(x1.size, d=1 / self.samplerate_acquire) * 1e-6
-                ft_x1 = abs(rfft(x1))
-                self.rplt_td_1.plot(t, x1, clear=True, _callSync="off")
+                t = np.arange(x1_plot.size) / self.samplerate_acquire
+                freq = rfftfreq(x1_plot.size, d=1 / self.samplerate_acquire) * 1e-6
+                ft_x1 = abs(rfft(x1_plot))
+                self.rplt_td_1.plot(t, x1_plot, clear=True, _callSync="off")
                 self.rplt_fd_1.plot(freq, ft_x1, clear=True, _callSync="off")
 
                 self.x1 = x1
@@ -527,6 +540,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             x1 = X[:, 0]
             x2 = X[:, 1]
 
+            x1 = x1[: self.plotsamplesize]
+            x2 = x2[: self.plotsamplesize]
+
             # plotting
             t = np.arange(x1.size) / self.samplerate_stream
             freq = rfftfreq(x1.size, d=1 / self.samplerate_stream) * 1e-6
@@ -539,6 +555,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         else:
             x1 = X
+
+            x1 = x1[: self.plotsamplesize]
+
             t = np.arange(x1.size) / self.samplerate_stream
             freq = rfftfreq(x1.size, d=1 / self.samplerate_stream) * 1e-6
             ft_x1 = abs(rfft(x1))
