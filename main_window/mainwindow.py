@@ -523,7 +523,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.stream_stop_event.set()
             self.tb_monitor.setText("stream stopped by user")
         else:
-            self.tb_monitor.setText("stream is already not running")
+            self.tb_monitor.setText("no stream is running")
 
     def update_progress_bar(self, val):
         self.pb.setValue(val)
