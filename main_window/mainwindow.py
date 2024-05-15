@@ -259,7 +259,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             segmentsize = int(float(self.le_segmentsize.text()))
             return segmentsize
         except Exception as e:
-            self.tb_monitor.setText("Error:", e)
+            self.tb_monitor.setText(f"Error: {e}")
 
             default_segmentsize = 2**14
             self.le_segmentsize.setText(str(default_segmentsize))
@@ -271,7 +271,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             samplesize = int(float(self.le_buffersize.text()))
             return sample_size_to_buffer_size(samplesize)
         except Exception as e:
-            self.tb_monitor.setText("Error:", e)
+            self.tb_monitor.setText(f"Error: {e}")
 
             default_samplesize = 2**14
             self.le_buffersize.setText(str(default_samplesize))
@@ -284,7 +284,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return samplesize
 
         except Exception as e:
-            self.tb_monitor.setText("Error:", e)
+            self.tb_monitor.setText(f"Error: {e}")
 
             default_samplesize = 2**14 * 100  # save 100
             self.le_buffersize.setText(str(default_samplesize))
@@ -295,21 +295,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         try:
             return int(float(self.tw_acquire.item(2, 0).text()))
         except Exception as e:
-            self.tb_monitor.setText("Error:", e)
+            self.tb_monitor.setText(f"Error: {e}")
 
     @property
     def samplerate_stream(self):
         try:
             return int(float(self.tw_stream.item(2, 0).text()))
         except Exception as e:
-            self.tb_monitor.setText("Error:", e)
+            self.tb_monitor.setText(f"Error: {e}")
 
     @property
     def plotsamplesize(self):
         try:
             return int(float(self.le_plotsamplesize.text()))
         except Exception as e:
-            self.tb_monitor.setText("Error:", e)
+            self.tb_monitor.setText(f"Error: {e}, set to default 2**14")
+            self.le_plotsamplesize.setText(str(int(2**14)))
             return int(2**14)  # default plot sample size
 
     def acquire(self, *args, plot=True):
@@ -371,7 +372,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         try:
             level_percent = float(self.tw_stream.item(27, 0).text())
         except Exception as e:
-            self.tb_monitor.setText("Error:", e)
+            self.tb_monitor.setText(f"Error: {e}")
             return
 
         if self.mode_acquire == 1:
