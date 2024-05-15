@@ -327,8 +327,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         if self.mode_acquire == 2:
             self.acquiring_in_process.set()
-            x1, x2 = Acquire.acquire(self.segmentsize)
-            self.acquiring_in_process.clear()
+            try:
+                x1, x2 = Acquire.acquire(self.segmentsize)
+                self.acquiring_in_process.clear()
+            except Exception as e:
+                self.tb_monitor.setText("error occured during acquisition")
+                self.acquiring_in_process.clear()
 
             if plot:
                 x1_plot = x1[: self.plotsamplesize]
