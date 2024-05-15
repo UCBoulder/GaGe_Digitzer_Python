@@ -890,10 +890,16 @@ background-color: rgb(199, 202, 202);</string>
              <property name="text">
               <string>hello world</string>
              </property>
+             <property name="flags">
+              <set>NoItemFlags</set>
+             </property>
             </item>
             <item row="4" column="0">
              <property name="text">
               <string>hello world</string>
+             </property>
+             <property name="flags">
+              <set>NoItemFlags</set>
              </property>
             </item>
             <item row="5" column="0">
