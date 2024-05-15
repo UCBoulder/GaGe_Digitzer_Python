@@ -587,7 +587,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
 
         (filename, *_) = qt.QFileDialog.getSaveFileName(
-            caption=f"Save Acquisition Data"
+            caption=f"Save Stream Data"
         )
         if filename == "":
             return
