@@ -57,7 +57,7 @@ background-color: rgb(199, 202, 202);</string>
            <item row="0" column="2" colspan="3">
             <widget class="QLineEdit" name="le_segmentsize">
              <property name="text">
-              <string>16384</string>
+              <string>213444</string>
              </property>
             </widget>
            </item>
@@ -71,7 +71,7 @@ background-color: rgb(199, 202, 202);</string>
            <item row="1" column="3" colspan="2">
             <widget class="QLineEdit" name="le_plotsamplesize">
              <property name="text">
-              <string>16384</string>
+              <string>106722</string>
              </property>
             </widget>
            </item>
@@ -85,7 +85,7 @@ background-color: rgb(199, 202, 202);</string>
            <item row="2" column="2" colspan="3">
             <widget class="QLineEdit" name="le_buffersize">
              <property name="text">
-              <string>16384</string>
+              <string>106722000</string>
              </property>
             </widget>
            </item>
@@ -99,7 +99,7 @@ background-color: rgb(199, 202, 202);</string>
            <item row="3" column="1" colspan="4">
             <widget class="QLineEdit" name="le_savebuffersize">
              <property name="text">
-              <string>1638400</string>
+              <string>106722000</string>
              </property>
             </widget>
            </item>
@@ -323,6 +323,7 @@ background-color: rgb(199, 202, 202);</string>
              </property>
              <property name="font">
               <font>
+               <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
@@ -388,6 +389,7 @@ background-color: rgb(199, 202, 202);</string>
              </property>
              <property name="font">
               <font>
+               <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
@@ -413,6 +415,7 @@ background-color: rgb(199, 202, 202);</string>
              </property>
              <property name="font">
               <font>
+               <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
@@ -438,6 +441,7 @@ background-color: rgb(199, 202, 202);</string>
              </property>
              <property name="font">
               <font>
+               <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
@@ -463,6 +467,7 @@ background-color: rgb(199, 202, 202);</string>
              </property>
              <property name="font">
               <font>
+               <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
@@ -478,6 +483,7 @@ background-color: rgb(199, 202, 202);</string>
              </property>
              <property name="font">
               <font>
+               <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
@@ -719,6 +725,7 @@ background-color: rgb(199, 202, 202);</string>
              </property>
              <property name="font">
               <font>
+               <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
@@ -774,6 +781,7 @@ background-color: rgb(199, 202, 202);</string>
              </property>
              <property name="font">
               <font>
+               <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
@@ -804,6 +812,7 @@ background-color: rgb(199, 202, 202);</string>
              </property>
              <property name="font">
               <font>
+               <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
@@ -834,6 +843,7 @@ background-color: rgb(199, 202, 202);</string>
              </property>
              <property name="font">
               <font>
+               <weight>75</weight>
                <bold>true</bold>
               </font>
              </property>
@@ -1084,7 +1094,7 @@ background-color: rgb(199, 202, 202);</string>
      <x>0</x>
      <y>0</y>
      <width>996</width>
-     <height>37</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
