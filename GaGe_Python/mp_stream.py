@@ -676,9 +676,7 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *a
 
     elif mode == "pass":
         (X,) = mp_arrays
-        end = len(X)
-        X[:] = buffer[:end]
-        pass
+        X[:] = buffer[:len(X)]
 
     (mp_total_data, mp_loop_count) = mp_values
     mp_total_data.value = g_cardTotalData[0]

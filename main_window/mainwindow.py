@@ -41,37 +41,37 @@ def _add_RemoteGraphicsView_to_layout(layoutWidget):
     return view, rplt
 
 
-def find_npts(x, level_percent):
-    # remove the DC component
-    x[:] -= x.mean()
-    level = x.max() * level_percent * 0.01
-    (idx,) = (x > level).nonzero()
-    spacing = np.diff(idx)
-    average_spacing = spacing[spacing > spacing.max() / 2].mean()
-    ppifg = int(np.round(average_spacing))
-    return average_spacing, ppifg
-
-
-# def find_npts(x, level_percent=40):
+# def find_npts(x, level_percent):
+#     # remove the DC component
 #     x[:] -= x.mean()
-#     level = np.max(x) * level_percent * 0.01
-#     (ind,) = (x > level).nonzero()
-#     diff = np.diff(ind)
-#     ind_diff = (diff > 1000).nonzero()[0]
+#     level = x.max() * level_percent * 0.01
+#     (idx,) = (x > level).nonzero()
+#     spacing = np.diff(idx)
+#     average_spacing = spacing[spacing > spacing.max() / 2].mean()
+#     ppifg = int(np.round(average_spacing))
+#     return average_spacing, ppifg
 
-#     h = 0
-#     trial = []
-#     for i in ind_diff + 1:
-#         trial.append(ind[h:i])
-#         h = i
 
-#     ind_maxes = []
-#     for i in trial:
-#         ind_maxes.append(i[np.argmax(x[i])])
+def find_npts(x, level_percent=40):
+    x[:] -= x.mean()
+    level = np.max(x) * level_percent * 0.01
+    (ind,) = (x > level).nonzero()
+    diff = np.diff(ind)
+    ind_diff = (diff > 1000).nonzero()[0]
 
-#     mean = np.mean(np.diff(ind_maxes))
+    h = 0
+    trial = []
+    for i in ind_diff + 1:
+        trial.append(ind[h:i])
+        h = i
 
-#     return mean, int(np.round(mean))
+    ind_maxes = []
+    for i in trial:
+        ind_maxes.append(i[np.argmax(x[i])])
+
+    mean = np.mean(np.diff(ind_maxes))
+
+    return mean, int(np.round(mean))
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -361,6 +361,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             except Exception as e:
                 self.tb_monitor.setText("error occured during acquisition")
                 self.acquiring_in_process.clear()
+                return
 
             if plot:
                 x1_plot = x1[: self.plotsamplesize]
@@ -693,6 +694,7 @@ class TrackUpdate(qtc.QThread):
         elif not self.timer_initialized:
             self.start_time = time.time()
             self.timer_initialized = True
+            return
 
         if not self.stream_error_event.is_set():
             # ===== print out elapsed time and data rate ======================
@@ -783,6 +785,7 @@ class TrackSave(qtc.QThread):
         elif not self.timer_initialized:
             self.start_time = time.time()
             self.timer_initialized = True
+            return
 
         if self.waiting_for_stream_exit.is_set():
             if self.stream_exit_event.is_set():
