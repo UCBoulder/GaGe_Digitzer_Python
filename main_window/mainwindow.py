@@ -680,13 +680,20 @@ class TrackUpdate(qtc.QThread):
         self.signal_plot = Signal()
         self.signal_tb = Signal()
 
+        self.timer_initialized = False
+
     def run(self):
-        self.start_time = time.time()
         self.timer.start(self.wait_time)
         loop = qtc.QEventLoop()
         loop.exec()
 
     def timer_timeout(self):
+        if not self.stream_start_event.is_set():
+            return
+        elif not self.timer_initialized:
+            self.start_time = time.time()
+            self.timer_initialized = True
+
         if not self.stream_error_event.is_set():
             # ===== print out elapsed time and data rate ======================
             elapsed_time = time.time() - self.start_time
@@ -759,17 +766,24 @@ class TrackSave(qtc.QThread):
         self.timer.timeout.connect(self.timer_timeout)
         self.timer.moveToThread(self)
 
+        self.timer_initialized = False
+
     @property
     def total_data(self):
         return self.data_increment * self.loop_count.value
 
     def run(self):
-        self.start_time = time.time()
         self.timer.start(self.wait_time)
         loop = qtc.QEventLoop()
         loop.exec()
 
     def timer_timeout(self):
+        if not self.stream_start_event.is_set():
+            return
+        elif not self.timer_initialized:
+            self.start_time = time.time()
+            self.timer_initialized = True
+
         if self.waiting_for_stream_exit.is_set():
             if self.stream_exit_event.is_set():
                 self.signal_tb.sig.emit("finished saving")
