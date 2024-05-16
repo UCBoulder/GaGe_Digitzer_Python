@@ -499,11 +499,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # ===== mp arrays =====================================================
         if self.cb_average.isChecked():
             if self.cb_save_stream.isChecked():
-                self.mp_arrays = [mp.Array("q", self.saveArraySize)]
+                # self.mp_arrays = [mp.Array("q", self.saveArraySize)]
+                self.mp_arrays = [None]  # now directly saving from stream process
             else:
                 self.mp_arrays = [mp.Array("q", self.segmentsize)]
         elif self.cb_save_stream.isChecked():
-            self.mp_arrays = [mp.Array("q", self.saveArraySize)]
+            # self.mp_arrays = [mp.Array("q", self.saveArraySize)]
+            self.mp_arrays = [None]  # now directly saving from stream process
         else:
             self.mp_arrays = [mp.Array("q", samplebuffersize)]
         self.mp_values = [mp.Value("q"), mp.Value("q")]
@@ -609,29 +611,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 np.save(filename + "_ch2.npy", self.x2)
 
     def save_stream(self):
-        if len(self.mp_arrays) == 0:
-            self.tb_monitor.setText("no stream acquired")
-            return
+        self.tb_monitor.setText(
+            "streams are now saved automatically in ../memmap_overwrite/"
+        )
 
-        (filename, *_) = qt.QFileDialog.getSaveFileName(caption=f"Save Stream Data")
-        if filename == "":
-            return
+        # if len(self.mp_arrays) == 0:
+        #     self.tb_monitor.setText("no stream acquired")
+        #     return
 
-        (X,) = self.mp_arrays
-        X = np.frombuffer(X.get_obj(), np.int64)
-        if self.mode_stream == 2:
-            N = int(X.size) // 2
-            X.resize((N, 2))
+        # (filename, *_) = qt.QFileDialog.getSaveFileName(caption=f"Save Stream Data")
+        # if filename == "":
+        #     return
 
-            x1 = X[:, 0]
-            x2 = X[:, 1]
-        else:
-            x1 = X
-            x2 = None
+        # (X,) = self.mp_arrays
+        # X = np.frombuffer(X.get_obj(), np.int64)
+        # if self.mode_stream == 2:
+        #     N = int(X.size) // 2
+        #     X.resize((N, 2))
 
-        np.save(filename + "_ch1.npy", x1)
-        if x2 is not None:
-            np.save(filename + "_ch2.npy", x2)
+        #     x1 = X[:, 0]
+        #     x2 = X[:, 1]
+        # else:
+        #     x1 = X
+        #     x2 = None
+
+        # np.save(filename + "_ch1.npy", x1)
+        # if x2 is not None:
+        #     np.save(filename + "_ch2.npy", x2)
 
 
 class TrackUpdate(qtc.QThread):

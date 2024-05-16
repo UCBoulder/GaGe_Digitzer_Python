@@ -12,6 +12,7 @@ import PyGage3_64 as PyGage
 import GageSupport as gs
 import numpy as np
 import multiprocessing as mp
+from datetime import datetime
 
 
 from GageConstants import (
@@ -488,12 +489,28 @@ def stream(
 
         # ==== after starting transfer, start work on the previous buffer =====
         if work_buffer_active:
-            # I've verified that commenting this out doesn't speed things up.
-            # So it's not cuz it's hung up on a thread....
-            # wait for the thread if it is still held up
             if active_threads[thread_count]:
                 work_threads[thread_count].join()
                 active_threads[thread_count] = False
+
+            # if saving data, write to a numpy array instead of a multiprocessing Array
+            mode = args_doanalysis[0]
+            if mode == "save" or mode == "save average":
+                if loop_count == 1:
+                    if mode == "save":
+                        savebuffersize = args_doanalysis[1]
+                    else:
+                        ppifg = args_doanalysis[1]
+                        savebuffersize = args_doanalysis[2]
+                    try:
+                        memmap = np.zeros(dtype=np.int32, shape=(savebuffersize,))
+                        mp_arrays = [memmap]
+
+                    except Exception as e:
+                        print("failed to initialize save buffer \n", e)
+                        stream_error_event.set()
+                        done = True
+                        continue
 
             # then start the thread on analyzing new data
             args = (
@@ -545,6 +562,32 @@ def stream(
 
         if stream_stop_event.is_set():
             done = True
+
+            # do analysis on last buffer
+            if active_threads[thread_count]:
+                work_threads[thread_count].join()
+
+            # then start the thread on analyzing new data
+            args = (
+                loop_count,
+                g_cardTotalData,
+                stream_info.WorkBuffer,
+                mp_values,
+                mp_arrays,
+                *args_doanalysis,
+            )
+            work_threads[thread_count] = threading.Thread(target=DoAnalysis, args=args)
+            work_threads[thread_count].start()
+            work_threads[thread_count].join()
+
+            if mode == "save" or mode == "save average":
+                if mode == "save":
+                    step = buffer.size
+                else:
+                    step = ppifg
+                end = step * loop_count
+                t = datetime.now().isoformat(timespec="seconds").replace(":", "-")
+                np.save(f"../memmap_overwrite/{t}.npy", memmap[:end])
 
         print(loop_count)
 
@@ -638,56 +681,3 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *a
     (mp_total_data, mp_loop_count) = mp_values
     mp_total_data.value = g_cardTotalData[0]
     mp_loop_count.value = loop_count
-
-
-# %% ===== testing ============================================================
-# buffer_size_to_sample_size = lambda x: x / 2
-# sample_size_to_buffer_size = lambda x: x * 2
-
-# if __name__ == "__main__":
-#     segmentsize = 77760
-
-#     stream_ready_event = mp.Event()
-#     stream_start_event = mp.Event()
-#     stream_stop_event = mp.Event()
-#     stream_error_event = mp.Event()
-
-#     N_analysis_threads = 2
-
-#     mode = "save"
-#     N_avg = 500
-#     N_save = 500
-#     mp_values = [mp.Value("q")]
-
-#     if mode == "average":
-#         buffersize = sample_size_to_buffer_size(segmentsize * N_avg)
-#         args_doanalysis = (mode, segmentsize)
-#         mp_arrays = [mp.Array("q", segmentsize)]
-
-#     if mode == "save average":
-#         buffersize = sample_size_to_buffer_size(segmentsize * N_avg)
-#         savebuffersize = segmentsize * N_save
-#         args_doanalysis = (mode, segmentsize, savebuffersize, stream_stop_event)
-#         mp_arrays = [mp.Array("q", savebuffersize)]
-
-#     if mode == "save":
-#         buffersize = sample_size_to_buffer_size(segmentsize)
-#         savebuffersize = segmentsize * N_save
-#         args_doanalysis = (mode, savebuffersize, stream_stop_event)
-#         mp_arrays = [mp.Array("q", savebuffersize)]
-
-#     args = (
-#         inifile_default,
-#         buffersize,
-#         stream_ready_event,
-#         stream_start_event,
-#         stream_stop_event,
-#         stream_error_event,
-#         N_analysis_threads,
-#         mp_values,
-#         mp_arrays,
-#         args_doanalysis,
-#     )
-
-#     process = mp.Process(target=stream, args=args)
-#     process.start()
