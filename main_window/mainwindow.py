@@ -513,7 +513,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 # self.mp_arrays = [mp.Array("q", self.segmentsize)]
                 self.mp_arrays = [
-                    mp.Array("q", self.plotsamplesize)
+                    mp.Array("q", self.plotsamplesize * self.mode_stream)
                 ]  # just update a subset for plotting
         elif self.cb_save_stream.isChecked():
             # self.mp_arrays = [mp.Array("q", self.saveArraySize)]
@@ -521,7 +521,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             # self.mp_arrays = [mp.Array("q", samplebuffersize)]
             self.mp_arrays = [
-                mp.Array("q", self.plotsamplesize)
+                mp.Array("q", self.plotsamplesize * self.mode_stream)
             ]  # just update a subset for plotting
 
         self.mp_values = [mp.Value("q"), mp.Value("q")]
