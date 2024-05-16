@@ -100,6 +100,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.stream_stop_event = mp.Event()
         self.stream_error_event = mp.Event()
         self.stream_exit_event = mp.Event()
+        self.waiting_for_stream_exit = threading.Event()
         self.N_analysis_threads = 4
         self.mp_values = []
         self.mp_arrays = []
@@ -338,8 +339,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def acquire(self, *args, plot=True):
         if self.stream_start_event.is_set():
-            self.tb_monitor.setText("stop the active stream")
-            return
+            if self.waiting_for_stream_exit.is_set():
+                self.tb_monitor.setText("wait for the stream data to save")
+                return
+            else:
+                self.tb_monitor.setText("stop the active stream")
+                return
 
         if self.acquiring_in_process.is_set():
             self.tb_monitor.setText("wait for acquisition to finish")
@@ -440,8 +445,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def stream(self):
         if self.stream_start_event.is_set():
-            self.tb_monitor.setText("stop the active stream")
-            return
+            if self.waiting_for_stream_exit.is_set():
+                self.tb_monitor.setText("wait for the stream data to save")
+                return
+            else:
+                self.tb_monitor.setText("stop the active stream")
+                return
 
         if self.acquiring_in_process.is_set():
             self.tb_monitor.setText("wait for acquisition to finish")
@@ -502,12 +511,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 # self.mp_arrays = [mp.Array("q", self.saveArraySize)]
                 self.mp_arrays = [None]  # now directly saving from stream process
             else:
-                self.mp_arrays = [mp.Array("q", self.segmentsize)]
+                # self.mp_arrays = [mp.Array("q", self.segmentsize)]
+                self.mp_arrays = [
+                    mp.Array("q", self.plotsamplesize)
+                ]  # just update a subset for plotting
         elif self.cb_save_stream.isChecked():
             # self.mp_arrays = [mp.Array("q", self.saveArraySize)]
             self.mp_arrays = [None]  # now directly saving from stream process
         else:
-            self.mp_arrays = [mp.Array("q", samplebuffersize)]
+            # self.mp_arrays = [mp.Array("q", samplebuffersize)]
+            self.mp_arrays = [
+                mp.Array("q", self.plotsamplesize)
+            ]  # just update a subset for plotting
+
         self.mp_values = [mp.Value("q"), mp.Value("q")]
 
         # ===== start stream ==================================================
@@ -549,8 +565,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def stop_stream(self):
         if self.stream_start_event.is_set():
-            self.stream_stop_event.set()
-            self.tb_monitor.setText("stream stopped by user")
+            if self.waiting_for_stream_exit.is_set():
+                self.tb_monitor.setText("stream already stopped, wait for data to save")
+                return
+            else:
+                self.stream_stop_event.set()
+                self.tb_monitor.setText("stream stopped by user")
         else:
             self.tb_monitor.setText("no stream is running")
 
@@ -730,6 +750,8 @@ class TrackSave(qtc.QThread):
             self.data_increment = buffer_size_to_sample_size(mainwindow.buffersize)
         self.loop_count = mainwindow.mp_values[1]
 
+        self.waiting_for_stream_exit = mainwindow.waiting_for_stream_exit
+
         self.signal_pb = Signal()
         self.signal_tb = Signal()
 
@@ -748,6 +770,24 @@ class TrackSave(qtc.QThread):
         loop.exec()
 
     def timer_timeout(self):
+        if self.waiting_for_stream_exit.is_set():
+            if self.stream_exit_event.is_set():
+                self.signal_tb.sig.emit("finished saving")
+                self.waiting_for_stream_exit.clear()
+
+                self.stream_exit_event.clear()
+                self.stream_ready_event.clear()
+                self.stream_start_event.clear()
+                self.stream_error_event.clear()
+                self.stream_stop_event.clear()
+
+                self.timer.stop()
+                self.exit()
+                return
+            else:
+                self.signal_tb.sig.emit("still saving")
+                return
+
         if not self.stream_error_event.is_set():
             # ===== print out elapsed time and data rate ======================
             elapsed_time = time.time() - self.start_time
@@ -780,16 +820,18 @@ class TrackSave(qtc.QThread):
         if self.stream_error_event.is_set() or self.stream_stop_event.is_set():
             # wait for the card stream process to stop before clearing all
             # multiprocessing evnets
-            self.stream_exit_event.wait()
+            if self.stream_exit_event.is_set():
+                self.stream_exit_event.clear()
+                self.stream_ready_event.clear()
+                self.stream_start_event.clear()
+                self.stream_error_event.clear()
+                self.stream_stop_event.clear()
 
-            self.stream_exit_event.clear()
-            self.stream_ready_event.clear()
-            self.stream_start_event.clear()
-            self.stream_error_event.clear()
-            self.stream_stop_event.clear()
+                self.timer.stop()
+                self.exit()
 
-            self.timer.stop()
-            self.exit()
+            else:
+                self.waiting_for_stream_exit.set()
 
 
 if __name__ == "__main__":
