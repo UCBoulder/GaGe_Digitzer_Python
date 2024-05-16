@@ -541,19 +541,6 @@ def stream(
         buffer_count = loop_count % len(buffer_list)
         thread_count = (loop_count - 1) % len(work_threads)
 
-        # increment the work buffer
-        # if buffer_count == len(buffer_list) - 1:
-        #     buffer_count = 0
-        # else:
-        #     buffer_count += 1
-
-        # # increment the thread count after the first loop
-        # if work_buffer_active:
-        #     if thread_count == len(work_threads) - 1:
-        #         thread_count = 0
-        #     else:
-        #         thread_count += 1
-
         work_buffer_active = True
 
         if stream_stop_event.is_set():
