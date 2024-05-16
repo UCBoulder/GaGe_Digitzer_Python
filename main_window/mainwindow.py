@@ -11,6 +11,7 @@ import time
 import PyQt5.QtCore as qtc
 import sys
 import PyQt5.QtWidgets as qt
+import matplotlib.pyplot as plt
 
 sys.path.append("../GaGe_Python")
 
@@ -49,6 +50,28 @@ def find_npts(x, level_percent):
     average_spacing = spacing[spacing > spacing.max() / 2].mean()
     ppifg = int(np.round(average_spacing))
     return average_spacing, ppifg
+
+
+# def find_npts(x, level_percent=40):
+#     x[:] -= x.mean()
+#     level = np.max(x) * level_percent * 0.01
+#     (ind,) = (x > level).nonzero()
+#     diff = np.diff(ind)
+#     ind_diff = (diff > 1000).nonzero()[0]
+
+#     h = 0
+#     trial = []
+#     for i in ind_diff + 1:
+#         trial.append(ind[h:i])
+#         h = i
+
+#     ind_maxes = []
+#     for i in trial:
+#         ind_maxes.append(i[np.argmax(x[i])])
+
+#     mean = np.mean(np.diff(ind_maxes))
+
+#     return mean, int(np.round(mean))
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -590,9 +613,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.tb_monitor.setText("no stream acquired")
             return
 
-        (filename, *_) = qt.QFileDialog.getSaveFileName(
-            caption=f"Save Stream Data"
-        )
+        (filename, *_) = qt.QFileDialog.getSaveFileName(caption=f"Save Stream Data")
         if filename == "":
             return
 

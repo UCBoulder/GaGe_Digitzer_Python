@@ -12,3 +12,5 @@ You can try:
 
     2. Find how to write to the multiprocessing buffer faster.
 
+    3. Initialize more streaming buffers and work threads
+
