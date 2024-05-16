@@ -1,0 +1,14 @@
+
+I think we've determined that the main hold up is not the averaging or any "real time processing", but rather the time it takes to write to the multiprocessing Array. 
+
+I've tried putting the card stream also on a separate thread instead of a separate process. Writing to a numpy array is actually faster, and allows the card stream to keep up. However, the problem in that case is that then any analysis function takes too long to finish. Multiprocessing allows the real-time processing, but the trade off is that the buffer write is slower.
+
+So, I think the goal is to find something in between. 
+
+You can try:
+    1. Putting the card stream on a separate thread instead of a separate process like before. Execept this time, you put the DoAnalysis section onto a separate process. The potential issue there is that the overhead for launching a separate process takes too long.
+
+    2. Actually, you can run both the card stream and doanalysis on separate processes
+
+    2. Find how to write to the multiprocessing buffer faster.
+
