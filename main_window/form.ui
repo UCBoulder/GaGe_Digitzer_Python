@@ -57,7 +57,7 @@ background-color: rgb(199, 202, 202);</string>
            <item row="0" column="2" colspan="3">
             <widget class="QLineEdit" name="le_segmentsize">
              <property name="text">
-              <string>213444</string>
+              <string>65536</string>
              </property>
             </widget>
            </item>

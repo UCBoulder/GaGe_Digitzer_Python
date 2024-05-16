@@ -503,7 +503,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.groupBox.setTitle(_translate("MainWindow", "GroupBox"))
         self.label_2.setText(_translate("MainWindow", "segment size"))
-        self.le_segmentsize.setText(_translate("MainWindow", "213444"))
+        self.le_segmentsize.setText(_translate("MainWindow", "65536"))
         self.label_11.setText(_translate("MainWindow", "plot sample size"))
         self.le_plotsamplesize.setText(_translate("MainWindow", "106722"))
         self.label_3.setText(_translate("MainWindow", "stream buffer size"))
