@@ -637,7 +637,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def save_stream(self):
         self.tb_monitor.setText(
-            "streams are now saved automatically in ../memmap_overwrite/"
+            "streams are now saved automatically in data_backup/"
         )
 
         # if len(self.mp_arrays) == 0:
