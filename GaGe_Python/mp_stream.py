@@ -593,8 +593,8 @@ def stream(
                 else:
                     N = memmap.size // 2
                     memmap.resize((N, 2))
-                    np.save(f"../data_backup/{t}_ch1.npy", memmap[: end // 2])
-                    np.save(f"../data_backup/{t}_ch2.npy", memmap[: end // 2])
+                    np.save(f"../data_backup/{t}_ch1.npy", memmap[: end // 2][:, 0])
+                    np.save(f"../data_backup/{t}_ch2.npy", memmap[: end // 2][:, 1])
 
         print(loop_count)
 
