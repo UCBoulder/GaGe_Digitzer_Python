@@ -564,46 +564,49 @@ def stream(
         if stream_stop_event.is_set():
             done = True
 
-            # do analysis on last buffer
-            if active_threads[thread_count]:
-                work_threads[thread_count].join()
-
-            # then start the thread on analyzing new data
-            args = (
-                loop_count,
-                g_cardTotalData,
-                stream_info.WorkBuffer,
-                mp_values,
-                mp_arrays,
-                *args_doanalysis,
-            )
-            work_threads[thread_count] = threading.Thread(target=DoAnalysis, args=args)
-            work_threads[thread_count].start()
-            work_threads[thread_count].join()
-
-            if mode == "save" or mode == "save average":
-                if mode == "save":
-                    step = buffer.size
-                else:
-                    step = ppifg
-                end = step * loop_count
-                t = datetime.now().isoformat(timespec="seconds").replace(":", "-")
-                if save_channels == 1:
-                    np.save(f"../data_backup/{t}_ch1.npy", memmap[:end])
-                else:
-                    N = memmap.size // 2
-                    memmap.resize((N, 2))
-                    np.save(f"../data_backup/{t}_ch1.npy", memmap[: end // 2][:, 0])
-                    np.save(f"../data_backup/{t}_ch2.npy", memmap[: end // 2][:, 1])
-
         print(loop_count)
 
+    # ===== exiting loop ======================================================
+    # free the GaGe card and streaming buffers
     PyGage.FreeStreamingBuffer(handle, card_index, buffer1)
     PyGage.FreeStreamingBuffer(handle, card_index, buffer2)
     PyGage.FreeStreamingBuffer(handle, card_index, buffer3)
     PyGage.FreeStreamingBuffer(handle, card_index, buffer4)
     PyGage.AbortCapture(handle)
     PyGage.FreeSystem(handle)
+
+    # Do analysis on the last buffer. Sometimes the data can take a while to
+    # save, so freeing the card first allows you to launch another gui while
+    # this one is saving.
+    if active_threads[thread_count]:
+        work_threads[thread_count].join()
+
+    args = (
+        loop_count,
+        g_cardTotalData,
+        stream_info.WorkBuffer,
+        mp_values,
+        mp_arrays,
+        *args_doanalysis,
+    )
+    work_threads[thread_count] = threading.Thread(target=DoAnalysis, args=args)
+    work_threads[thread_count].start()
+    work_threads[thread_count].join()
+
+    if mode == "save" or mode == "save average":
+        if mode == "save":
+            step = buffer.size
+        else:
+            step = ppifg
+        end = step * loop_count
+        t = datetime.now().isoformat(timespec="seconds").replace(":", "-")
+        if save_channels == 1:
+            np.save(f"../data_backup/{t}_ch1.npy", memmap[:end])
+        else:
+            N = memmap.size // 2
+            memmap.resize((N, 2))
+            np.save(f"../data_backup/{t}_ch1.npy", memmap[: end // 2][:, 0])
+            np.save(f"../data_backup/{t}_ch2.npy", memmap[: end // 2][:, 1])
 
     # the tracking thread will wait for this flag before clearing all of the
     # multiprocessing events. You don't want to clear all events here either
