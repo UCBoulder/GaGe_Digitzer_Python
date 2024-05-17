@@ -311,6 +311,7 @@ def stream(
     mp_values=[],
     mp_arrays=[],
     args_doanalysis=None,
+    save_channels=1,
 ):
     """
     GaGe card streaming. This is a process independent function that can be
@@ -587,7 +588,13 @@ def stream(
                     step = ppifg
                 end = step * loop_count
                 t = datetime.now().isoformat(timespec="seconds").replace(":", "-")
-                np.save(f"../memmap_overwrite/{t}.npy", memmap[:end])
+                if save_channels == 1:
+                    np.save(f"../data_backup/{t}_ch1.npy", memmap[:end])
+                else:
+                    N = memmap.size // 2
+                    memmap.resize((N, 2))
+                    np.save(f"../data_backup/{t}_ch1.npy", memmap[: end // 2])
+                    np.save(f"../data_backup/{t}_ch2.npy", memmap[: end // 2])
 
         print(loop_count)
 
@@ -676,7 +683,7 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *a
 
     elif mode == "pass":
         (X,) = mp_arrays
-        X[:] = buffer[:len(X)]
+        X[:] = buffer[: len(X)]
 
     (mp_total_data, mp_loop_count) = mp_values
     mp_total_data.value = g_cardTotalData[0]

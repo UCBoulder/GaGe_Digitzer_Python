@@ -560,7 +560,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # flag. This happens even when I start the track_stream thread first.
         # I no longer clear any flags in mp_stream, so they should all be
         # caught by the track_stream 🤷‍♂️
-        self.process_stream = mp.Process(target=mp_stream.stream, args=args)
+        self.process_stream = mp.Process(
+            target=mp_stream.stream,
+            args=args,
+            kwargs={"save_channels": self.mode_stream},
+        )
         self.process_stream.start()
         self.tb_monitor.setText("stream started")
 
