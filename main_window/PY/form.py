@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\Augustine\Downloads\GaGe_Digitzer_Python\main_window\form.ui'
+# Form implementation generated from reading ui file 'C:\Users\Augustine\Desktop\PICARD Code\Peter Code\GaGe_Digitzer_Python\main_window\form.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.10
 #
@@ -503,7 +503,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.groupBox.setTitle(_translate("MainWindow", "GroupBox"))
         self.label_2.setText(_translate("MainWindow", "segment size"))
-        self.le_segmentsize.setText(_translate("MainWindow", "65536"))
+        self.le_segmentsize.setText(_translate("MainWindow", "213444"))
         self.label_11.setText(_translate("MainWindow", "plot sample size"))
         self.le_plotsamplesize.setText(_translate("MainWindow", "106722"))
         self.label_3.setText(_translate("MainWindow", "stream buffer size"))
