@@ -312,6 +312,7 @@ def stream(
     mp_arrays=[],
     args_doanalysis=None,
     save_channels=1,
+    average=False,
 ):
     """
     GaGe card streaming. This is a process independent function that can be
@@ -504,7 +505,8 @@ def stream(
                         ppifg = args_doanalysis[1]
                         savebuffersize = args_doanalysis[2]
                     try:
-                        memmap = np.zeros(dtype=np.int16, shape=(savebuffersize,))
+                        dtype = np.int32 if average else np.int16
+                        memmap = np.zeros(dtype=dtype, shape=(savebuffersize,))
                         mp_arrays = [memmap]
 
                     except Exception as e:

@@ -564,7 +564,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.process_stream = mp.Process(
             target=mp_stream.stream,
             args=args,
-            kwargs={"save_channels": self.mode_stream},
+            kwargs={
+                "save_channels": self.mode_stream,
+                "average": self.cb_average.isChecked(),
+            },
         )
         self.process_stream.start()
         self.tb_monitor.setText("stream started")
@@ -637,9 +640,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 np.save(filename + "_ch2.npy", self.x2)
 
     def save_stream(self):
-        self.tb_monitor.setText(
-            "streams are now saved automatically in data_backup/"
-        )
+        self.tb_monitor.setText("streams are now saved automatically in data_backup/")
 
         # if len(self.mp_arrays) == 0:
         #     self.tb_monitor.setText("no stream acquired")
