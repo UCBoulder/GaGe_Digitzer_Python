@@ -622,10 +622,10 @@ def stream(
         if save_channels == 1:
             np.save(f"../data_backup/{t}_ch1.npy", memmap[:end])
         else:
-            N = memmap.size // 2
-            memmap.resize((N, 2))
-            np.save(f"../data_backup/{t}_ch1.npy", memmap[: end // 2][:, 0])
-            np.save(f"../data_backup/{t}_ch2.npy", memmap[: end // 2][:, 1])
+            N = memmap.size // save_channels
+            memmap.resize((N, save_channels))
+            for i in range(save_channels):
+                np.save(f"../data_backup/{t}_ch{i + 1}.npy", memmap[: end // save_channels][:, i])
 
     # the tracking thread will wait for this flag before clearing all of the
     # multiprocessing events. You don't want to clear all events here either
