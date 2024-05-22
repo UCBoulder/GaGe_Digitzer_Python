@@ -504,7 +504,7 @@ def stream(
                         ppifg = args_doanalysis[1]
                         savebuffersize = args_doanalysis[2]
                     try:
-                        memmap = np.zeros(dtype=np.int32, shape=(savebuffersize,))
+                        memmap = np.zeros(dtype=np.int16, shape=(savebuffersize,))
                         mp_arrays = [memmap]
 
                     except Exception as e:

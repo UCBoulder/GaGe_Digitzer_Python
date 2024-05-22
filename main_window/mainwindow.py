@@ -12,6 +12,7 @@ import PyQt5.QtCore as qtc
 import sys
 import PyQt5.QtWidgets as qt
 import matplotlib.pyplot as plt
+import os
 
 sys.path.append("../GaGe_Python")
 
@@ -856,7 +857,9 @@ class TrackSave(qtc.QThread):
 
 
 if __name__ == "__main__":
+    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
     app = QApplication(sys.argv)
+    app.setAttribute(qtc.Qt.AA_EnableHighDpiScaling)
     widget = MainWindow()
     widget.show()
     sys.exit(app.exec())
