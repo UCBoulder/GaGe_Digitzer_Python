@@ -264,10 +264,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def mode_stream(self):
         if self.tw_stream.item(1, 0).text().lower() == "single":
             return 1
-        if self.tw_stream.item(1, 0).text().lower() == "dual":
+        elif self.tw_stream.item(1, 0).text().lower() == "dual":
             return 2
+        elif self.tw_stream.item(1, 0).text().lower() == "1":
+            return 1
+        elif self.tw_stream.item(1, 0).text().lower() == "2":
+            return 2
+        elif self.tw_stream.item(1, 0).text().lower() == "3":
+            return 3
+        elif self.tw_stream.item(1, 0).text().lower() == "4":
+            return 4
         else:
+            self.tb_monitor.setText("invalid acquisition mode")
             raise ValueError("invalid mode")
+            return
 
     @property
     def mode_acquire(self):
@@ -458,6 +468,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.tb_monitor.setText("wait for acquisition to finish")
             return
 
+        # ===== don't stream from more than two channels if not saving ========
+        if self.mode_stream > 2:
+            self.tb_monitor.setText(
+                "stream from more than 2 channels only supported when saving"
+            )
+            return
+
         self.write_config_stream()
 
         # ===== doanalysis args and sanity checks =============================
@@ -567,6 +584,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             kwargs={
                 "save_channels": self.mode_stream,
                 "average": self.cb_average.isChecked(),
+                "samplerate": self.samplerate_stream,
             },
         )
         self.process_stream.start()
