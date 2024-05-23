@@ -405,8 +405,11 @@ def stream(
     buffer_list = [buffer1, buffer2, buffer3, buffer4]
 
     wait_time = buffer1.size / samplerate
-    loop_count_update = int(np.ceil(100e-3 / wait_time))
-    print("updating every", loop_count_update)
+    loop_count_update = int(100e-3 // wait_time)
+    loop_count_update = 1 if loop_count_update == 0 else loop_count_update
+    print(
+        f"single buffer update is {np.round(wait_time * 1e3, 2)}ms updating every {loop_count_update}"
+    )
 
     #  =========== stream_info instance =======================================
     # number of samples in data segment
@@ -626,7 +629,10 @@ def stream(
             N = memmap.size // save_channels
             memmap.resize((N, save_channels))
             for i in range(save_channels):
-                np.save(f"../data_backup/{t}_ch{i + 1}.npy", memmap[: end // save_channels][:, i])
+                np.save(
+                    f"../data_backup/{t}_ch{i + 1}.npy",
+                    memmap[: end // save_channels][:, i],
+                )
 
     # the tracking thread will wait for this flag before clearing all of the
     # multiprocessing events. You don't want to clear all events here either
@@ -669,6 +675,7 @@ def DoAnalysis(
 
     if mode == "average":
         if loop_count % loop_count_update == 0:
+            # print("updating", loop_count)
             (ppifg,) = args_remaining
             N = int(buffer.size // ppifg)
             buffer.resize((N, ppifg))
@@ -715,6 +722,7 @@ def DoAnalysis(
 
     elif mode == "pass":
         if loop_count % loop_count_update == 0:
+            # print("updating", loop_count)
             (X,) = mp_arrays
             X[:] = buffer[: len(X)]
 
