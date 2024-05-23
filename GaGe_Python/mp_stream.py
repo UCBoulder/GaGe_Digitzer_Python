@@ -404,7 +404,7 @@ def stream(
 
     buffer_list = [buffer1, buffer2, buffer3, buffer4]
 
-    wait_time = buffer1.size / samplerate
+    wait_time = buffer1.size / (samplerate * save_channels)
     loop_count_update = int(100e-3 // wait_time)
     loop_count_update = 1 if loop_count_update == 0 else loop_count_update
     print(
