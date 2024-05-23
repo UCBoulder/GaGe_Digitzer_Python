@@ -469,7 +469,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
 
         # ===== don't stream from more than two channels if not saving ========
-        if self.mode_stream > 2:
+        if self.mode_stream > 2 and not self.cb_save_stream.isChecked():
             self.tb_monitor.setText(
                 "stream from more than 2 channels only supported when saving"
             )

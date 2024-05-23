@@ -406,6 +406,7 @@ def stream(
 
     wait_time = buffer1.size / samplerate
     loop_count_update = int(np.ceil(100e-3 / wait_time))
+    print("updating every", loop_count_update)
 
     #  =========== stream_info instance =======================================
     # number of samples in data segment
