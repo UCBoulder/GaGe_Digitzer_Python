@@ -531,17 +531,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.mp_arrays = [None]  # now directly saving from stream process
             else:
                 # self.mp_arrays = [mp.Array("q", self.segmentsize)]
+                size = self.plotsamplesize * self.mode_stream
+                size = (  # avoid array broadcasting error
+                    size
+                    if size < buffer_size_to_sample_size(self.buffersize)
+                    else buffer_size_to_sample_size(self.buffersize)
+                )
                 self.mp_arrays = [
-                    mp.Array("q", self.plotsamplesize * self.mode_stream)
+                    mp.Array("q", size)
                 ]  # just update a subset for plotting
         elif self.cb_save_stream.isChecked():
             # self.mp_arrays = [mp.Array("q", self.saveArraySize)]
             self.mp_arrays = [None]  # now directly saving from stream process
         else:
             # self.mp_arrays = [mp.Array("q", samplebuffersize)]
-            self.mp_arrays = [
-                mp.Array("q", self.plotsamplesize * self.mode_stream)
-            ]  # just update a subset for plotting
+            size = self.plotsamplesize * self.mode_stream
+            size = (  # avoid array broadcasting error
+                size
+                if size < buffer_size_to_sample_size(self.buffersize)
+                else buffer_size_to_sample_size(self.buffersize)
+            )
+            self.mp_arrays = [mp.Array("q", size)]  # just update a subset for plotting
 
         self.mp_values = [mp.Value("q"), mp.Value("q")]
 
