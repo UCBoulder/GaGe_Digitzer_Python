@@ -283,10 +283,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def mode_acquire(self):
         if self.tw_acquire.item(1, 0).text().lower() == "single":
             return 1
-        if self.tw_acquire.item(1, 0).text().lower() == "dual":
+        elif self.tw_acquire.item(1, 0).text().lower() == "dual":
             return 2
+        elif self.tw_acquire.item(1, 0).text().lower() == "1":
+            return 1
+        elif self.tw_acquire.item(1, 0).text().lower() == "2":
+            return 2
+        elif self.tw_acquire.item(1, 0).text().lower() == "3":
+            return 3
+        elif self.tw_acquire.item(1, 0).text().lower() == "4":
+            return 4
+
         else:
+            self.tb_monitor.setText("invalid acquisition mode")
             raise ValueError("invalid mode")
+            return
 
     @property
     def segmentsize(self):

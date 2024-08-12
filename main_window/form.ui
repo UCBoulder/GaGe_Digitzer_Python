@@ -233,7 +233,7 @@ background-color: rgb(199, 202, 202);</string>
               <string>stream real time average</string>
              </property>
              <property name="checkable">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -1197,7 +1197,7 @@ background-color: rgb(199, 202, 202);</string>
      <x>0</x>
      <y>0</y>
      <width>952</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
