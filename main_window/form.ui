@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>996</width>
-    <height>818</height>
+    <width>952</width>
+    <height>596</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,6 +21,11 @@ background-color: rgb(199, 202, 202);</string>
    <layout class="QGridLayout" name="gridLayout_4">
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
+      <property name="font">
+       <font>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
       <property name="currentIndex">
        <number>0</number>
       </property>
@@ -33,14 +38,14 @@ background-color: rgb(199, 202, 202);</string>
          <widget class="QGroupBox" name="groupBox">
           <property name="minimumSize">
            <size>
-            <width>317</width>
-            <height>466</height>
+            <width>280</width>
+            <height>400</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>317</width>
-            <height>466</height>
+            <width>280</width>
+            <height>400</height>
            </size>
           </property>
           <property name="title">
@@ -49,68 +54,113 @@ background-color: rgb(199, 202, 202);</string>
           <layout class="QGridLayout" name="gridLayout">
            <item row="0" column="0">
             <widget class="QLabel" name="label_2">
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
              <property name="text">
               <string>segment size</string>
              </property>
             </widget>
            </item>
-           <item row="0" column="2" colspan="3">
+           <item row="0" column="2" colspan="2">
             <widget class="QLineEdit" name="le_segmentsize">
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
              <property name="text">
-              <string>213444</string>
+              <string>16384</string>
              </property>
             </widget>
            </item>
            <item row="1" column="0">
             <widget class="QLabel" name="label_11">
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
              <property name="text">
               <string>plot sample size</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="3" colspan="2">
+           <item row="1" column="2" colspan="2">
             <widget class="QLineEdit" name="le_plotsamplesize">
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
              <property name="text">
-              <string>106722</string>
+              <string>32768</string>
              </property>
             </widget>
            </item>
            <item row="2" column="0" colspan="2">
             <widget class="QLabel" name="label_3">
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
              <property name="text">
               <string>stream buffer size</string>
              </property>
             </widget>
            </item>
-           <item row="2" column="2" colspan="3">
+           <item row="2" column="2" colspan="2">
             <widget class="QLineEdit" name="le_buffersize">
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
              <property name="text">
-              <string>106722000</string>
+              <string>32768000</string>
              </property>
             </widget>
            </item>
            <item row="3" column="0">
             <widget class="QLabel" name="label_9">
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
              <property name="text">
               <string>save buffer size</string>
              </property>
             </widget>
            </item>
-           <item row="3" column="1" colspan="4">
+           <item row="3" column="1" colspan="3">
             <widget class="QLineEdit" name="le_savebuffersize">
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
              <property name="text">
               <string>106722000</string>
              </property>
             </widget>
            </item>
-           <item row="4" column="0" colspan="2">
+           <item row="4" column="0">
             <widget class="QPushButton" name="pb_calc_ppifg">
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
              <property name="text">
               <string>calculate ppifg</string>
              </property>
             </widget>
            </item>
-           <item row="4" column="3" colspan="2">
+           <item row="4" column="2" colspan="2">
             <spacer name="horizontalSpacer">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -123,28 +173,43 @@ background-color: rgb(199, 202, 202);</string>
              </property>
             </spacer>
            </item>
-           <item row="5" column="0" colspan="2">
+           <item row="5" column="0">
             <widget class="QPushButton" name="pb_gage_acquire">
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
              <property name="text">
               <string>GaGe Acquire</string>
              </property>
             </widget>
            </item>
-           <item row="6" column="0" colspan="2">
+           <item row="6" column="0">
             <widget class="QPushButton" name="pb_gage_stream">
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
              <property name="text">
               <string>GaGe Stream</string>
              </property>
             </widget>
            </item>
-           <item row="7" column="0" colspan="3">
+           <item row="7" column="0" colspan="2">
             <widget class="QPushButton" name="pb_stop_gage_stream">
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
              <property name="text">
               <string>Stop GaGe Stream</string>
              </property>
             </widget>
            </item>
-           <item row="7" column="4">
+           <item row="7" column="3">
             <spacer name="horizontalSpacer_5">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -157,21 +222,34 @@ background-color: rgb(199, 202, 202);</string>
              </property>
             </spacer>
            </item>
-           <item row="8" column="0" colspan="4">
+           <item row="8" column="0" colspan="3">
             <widget class="QCheckBox" name="cb_average">
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
              <property name="text">
               <string>stream real time average</string>
+             </property>
+             <property name="checkable">
+              <bool>false</bool>
              </property>
             </widget>
            </item>
            <item row="9" column="0" colspan="2">
             <widget class="QCheckBox" name="cb_save_stream">
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
              <property name="text">
               <string>save stream data</string>
              </property>
             </widget>
            </item>
-           <item row="10" column="0" colspan="5">
+           <item row="10" column="0" colspan="4">
             <widget class="QTextBrowser" name="tb_monitor">
              <property name="maximumSize">
               <size>
@@ -179,17 +257,32 @@ background-color: rgb(199, 202, 202);</string>
                <height>81</height>
               </size>
              </property>
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
             </widget>
            </item>
            <item row="11" column="0">
             <widget class="QLabel" name="label_10">
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
              <property name="text">
               <string>stream progress</string>
              </property>
             </widget>
            </item>
-           <item row="11" column="2" colspan="3">
+           <item row="11" column="2" colspan="2">
             <widget class="QProgressBar" name="pb">
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
              <property name="value">
               <number>0</number>
              </property>
@@ -269,8 +362,8 @@ background-color: rgb(199, 202, 202);</string>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>20</width>
-            <height>160</height>
+            <width>17</width>
+            <height>45</height>
            </size>
           </property>
          </spacer>
@@ -316,6 +409,11 @@ background-color: rgb(199, 202, 202);</string>
               <width>231</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>8</pointsize>
+             </font>
             </property>
             <row>
              <property name="text">
@@ -719,6 +817,11 @@ background-color: rgb(199, 202, 202);</string>
               <height>16777215</height>
              </size>
             </property>
+            <property name="font">
+             <font>
+              <pointsize>8</pointsize>
+             </font>
+            </property>
             <row>
              <property name="text">
               <string>ACQUISITION</string>
@@ -1093,8 +1196,8 @@ background-color: rgb(199, 202, 202);</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>996</width>
-     <height>21</height>
+     <width>952</width>
+     <height>22</height>
     </rect>
    </property>
   </widget>

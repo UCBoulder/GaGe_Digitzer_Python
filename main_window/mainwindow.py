@@ -12,6 +12,7 @@ import PyQt5.QtCore as qtc
 import sys
 import PyQt5.QtWidgets as qt
 import matplotlib.pyplot as plt
+import os
 
 sys.path.append("../GaGe_Python")
 
@@ -263,10 +264,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def mode_stream(self):
         if self.tw_stream.item(1, 0).text().lower() == "single":
             return 1
-        if self.tw_stream.item(1, 0).text().lower() == "dual":
+        elif self.tw_stream.item(1, 0).text().lower() == "dual":
             return 2
+        elif self.tw_stream.item(1, 0).text().lower() == "1":
+            return 1
+        elif self.tw_stream.item(1, 0).text().lower() == "2":
+            return 2
+        elif self.tw_stream.item(1, 0).text().lower() == "3":
+            return 3
+        elif self.tw_stream.item(1, 0).text().lower() == "4":
+            return 4
         else:
+            self.tb_monitor.setText("invalid acquisition mode")
             raise ValueError("invalid mode")
+            return
 
     @property
     def mode_acquire(self):
@@ -457,6 +468,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.tb_monitor.setText("wait for acquisition to finish")
             return
 
+        # ===== don't stream from more than two channels if not saving ========
+        if self.mode_stream > 2 and not self.cb_save_stream.isChecked():
+            self.tb_monitor.setText(
+                "stream from more than 2 channels only supported when saving"
+            )
+            return
+
         self.write_config_stream()
 
         # ===== doanalysis args and sanity checks =============================
@@ -513,17 +531,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.mp_arrays = [None]  # now directly saving from stream process
             else:
                 # self.mp_arrays = [mp.Array("q", self.segmentsize)]
+                size = self.plotsamplesize * self.mode_stream
+                size = (  # avoid array broadcasting error
+                    size
+                    if size < buffer_size_to_sample_size(self.buffersize)
+                    else buffer_size_to_sample_size(self.buffersize)
+                )
                 self.mp_arrays = [
-                    mp.Array("q", self.plotsamplesize * self.mode_stream)
+                    mp.Array("q", size)
                 ]  # just update a subset for plotting
         elif self.cb_save_stream.isChecked():
             # self.mp_arrays = [mp.Array("q", self.saveArraySize)]
             self.mp_arrays = [None]  # now directly saving from stream process
         else:
             # self.mp_arrays = [mp.Array("q", samplebuffersize)]
-            self.mp_arrays = [
-                mp.Array("q", self.plotsamplesize * self.mode_stream)
-            ]  # just update a subset for plotting
+            size = self.plotsamplesize * self.mode_stream
+            size = (  # avoid array broadcasting error
+                size
+                if size < buffer_size_to_sample_size(self.buffersize)
+                else buffer_size_to_sample_size(self.buffersize)
+            )
+            self.mp_arrays = [mp.Array("q", size)]  # just update a subset for plotting
 
         self.mp_values = [mp.Value("q"), mp.Value("q")]
 
@@ -563,7 +591,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.process_stream = mp.Process(
             target=mp_stream.stream,
             args=args,
-            kwargs={"save_channels": self.mode_stream},
+            kwargs={
+                "save_channels": self.mode_stream,
+                "average": self.cb_average.isChecked(),
+                "samplerate": self.samplerate_stream,
+            },
         )
         self.process_stream.start()
         self.tb_monitor.setText("stream started")
@@ -636,9 +668,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 np.save(filename + "_ch2.npy", self.x2)
 
     def save_stream(self):
-        self.tb_monitor.setText(
-            "streams are now saved automatically in data_backup/"
-        )
+        self.tb_monitor.setText("streams are now saved automatically in data_backup/")
 
         # if len(self.mp_arrays) == 0:
         #     self.tb_monitor.setText("no stream acquired")
@@ -856,7 +886,9 @@ class TrackSave(qtc.QThread):
 
 
 if __name__ == "__main__":
+    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
     app = QApplication(sys.argv)
+    app.setAttribute(qtc.Qt.AA_EnableHighDpiScaling)
     widget = MainWindow()
     widget.show()
     sys.exit(app.exec())

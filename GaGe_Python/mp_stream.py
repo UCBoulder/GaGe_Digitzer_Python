@@ -312,6 +312,8 @@ def stream(
     mp_arrays=[],
     args_doanalysis=None,
     save_channels=1,
+    average=False,
+    samplerate=1e9,
 ):
     """
     GaGe card streaming. This is a process independent function that can be
@@ -401,6 +403,13 @@ def stream(
         return
 
     buffer_list = [buffer1, buffer2, buffer3, buffer4]
+
+    wait_time = buffer1.size / (samplerate * save_channels)
+    loop_count_update = int(100e-3 // wait_time)
+    loop_count_update = 1 if loop_count_update == 0 else loop_count_update
+    print(
+        f"single buffer update is {np.round(wait_time * 1e3, 2)}ms updating every {loop_count_update}"
+    )
 
     #  =========== stream_info instance =======================================
     # number of samples in data segment
@@ -504,7 +513,8 @@ def stream(
                         ppifg = args_doanalysis[1]
                         savebuffersize = args_doanalysis[2]
                     try:
-                        memmap = np.zeros(dtype=np.int32, shape=(savebuffersize,))
+                        dtype = np.int32 if average else np.int16
+                        memmap = np.zeros(dtype=dtype, shape=(savebuffersize,))
                         mp_arrays = [memmap]
 
                     except Exception as e:
@@ -522,7 +532,14 @@ def stream(
                 mp_arrays,
                 *args_doanalysis,
             )
-            work_threads[thread_count] = threading.Thread(target=DoAnalysis, args=args)
+
+            work_threads[thread_count] = threading.Thread(
+                target=DoAnalysis,
+                args=args,
+                kwargs={
+                    "loop_count_update": loop_count_update,
+                },
+            )
             work_threads[thread_count].start()
             active_threads[thread_count] = True
 
@@ -589,7 +606,13 @@ def stream(
         mp_arrays,
         *args_doanalysis,
     )
-    work_threads[thread_count] = threading.Thread(target=DoAnalysis, args=args)
+    work_threads[thread_count] = threading.Thread(
+        target=DoAnalysis,
+        args=args,
+        kwargs={
+            "loop_count_update": loop_count_update,
+        },
+    )
     work_threads[thread_count].start()
     work_threads[thread_count].join()
 
@@ -603,10 +626,13 @@ def stream(
         if save_channels == 1:
             np.save(f"../data_backup/{t}_ch1.npy", memmap[:end])
         else:
-            N = memmap.size // 2
-            memmap.resize((N, 2))
-            np.save(f"../data_backup/{t}_ch1.npy", memmap[: end // 2][:, 0])
-            np.save(f"../data_backup/{t}_ch2.npy", memmap[: end // 2][:, 1])
+            N = memmap.size // save_channels
+            memmap.resize((N, save_channels))
+            for i in range(save_channels):
+                np.save(
+                    f"../data_backup/{t}_ch{i + 1}.npy",
+                    memmap[: end // save_channels][:, i],
+                )
 
     # the tracking thread will wait for this flag before clearing all of the
     # multiprocessing events. You don't want to clear all events here either
@@ -614,7 +640,15 @@ def stream(
     stream_exit_event.set()
 
 
-def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *args):
+def DoAnalysis(
+    loop_count,
+    g_cardTotalData,
+    workbuffer,
+    mp_values,
+    mp_arrays,
+    *args,
+    loop_count_update=1,
+):
     """
     Do analysis on stream work buffer
 
@@ -640,13 +674,15 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *a
     buffer = np.frombuffer(workbuffer, np.int16)
 
     if mode == "average":
-        (ppifg,) = args_remaining
-        N = int(buffer.size // ppifg)
-        buffer.resize((N, ppifg))
+        if loop_count % loop_count_update == 0:
+            # print("updating", loop_count)
+            (ppifg,) = args_remaining
+            N = int(buffer.size // ppifg)
+            buffer.resize((N, ppifg))
 
-        (X,) = mp_arrays
-        end = len(X)
-        X[:] = np.sum(buffer, axis=0)[:end]
+            (X,) = mp_arrays
+            end = len(X)
+            X[:] = np.sum(buffer, axis=0)[:end]
 
     elif mode == "save average":
         (ppifg, savebuffersize, stream_stop_event) = args_remaining
@@ -685,8 +721,10 @@ def DoAnalysis(loop_count, g_cardTotalData, workbuffer, mp_values, mp_arrays, *a
         X[start:stop] = buffer
 
     elif mode == "pass":
-        (X,) = mp_arrays
-        X[:] = buffer[: len(X)]
+        if loop_count % loop_count_update == 0:
+            # print("updating", loop_count)
+            (X,) = mp_arrays
+            X[:] = buffer[: len(X)]
 
     (mp_total_data, mp_loop_count) = mp_values
     mp_total_data.value = g_cardTotalData[0]
